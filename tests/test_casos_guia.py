@@ -30,6 +30,7 @@ from conftest import (
     clave_publica_hex,
     completar_ronda_pos,
     correr_mineria,
+    dejar_pasar_tiempo,
     en_paralelo,
     esperar_error,
     estado_pos,
@@ -139,10 +140,15 @@ def _todos_tramposos_en_pow(trampa: str) -> list[str]:
 
 
 def _cadena_minada(bloques: int = 3) -> Simulador:
-    """Simulador PoW con `bloques` bloques minados y todos los nodos sincronizados."""
+    """Simulador PoW con `bloques` bloques minados y todos los nodos sincronizados.
+
+    Después pasa un minuto en el reloj simulado: así un bloque fabricado aquí
+    (extender_cadena) no queda fechado en el futuro para los nodos (§21.2).
+    """
     sim = sim_pow()
     minar_bloques(sim, bloques)
     assert sim.estado()["sincronizados"]
+    dejar_pasar_tiempo(sim)
     return sim
 
 
@@ -678,6 +684,7 @@ def test_c4_cadena_con_genesis_distinto():
 
 
 def test_c4_cadena_valida_mas_larga_se_acepta_y_queda_aislada():
+    """La cadena adoptada se guarda como copia propia (aislada de la lista recibida) y se difunde."""
     sim = _cadena_minada(2)
     cadena = sim.cadena_nodo("N01")
     extendida = extender_cadena(cadena, [firmar_tx(SEMILLA, "N10", "N09", 1, timestamp_siguiente(cadena))])
@@ -688,7 +695,10 @@ def test_c4_cadena_valida_mas_larga_se_acepta_y_queda_aislada():
     extendida.append({})
     assert len(sim.cadena_nodo("N03")) == 4
     assert sim.cadena_nodo("N03")[1] == cadena[1], "El nodo guardó una referencia a la lista recibida"
-    assert sim.estado()["sincronizados"] is False
+    # Al adoptarla, N03 la difunde y los demás la validan y adoptan (precisión del contrato).
+    final = sim.estado()
+    assert final["sincronizados"] is True and final["altura_red"] == 3
+    assert all(sim.cadena_nodo(i)[1] == cadena[1] for i in ids_de(sim))
     assert_invariantes(sim)
 
 

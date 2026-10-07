@@ -20,6 +20,7 @@ from conftest import (
     SEMILLA,
     alterar_hex,
     crear_cliente,
+    dejar_pasar_tiempo,
     extender_cadena,
     firmar_tx,
     normalizar,
@@ -362,6 +363,8 @@ def test_c4_recibir_cadena_malformada_http(cliente, nombre):
 
 def test_c4_recibir_cadena_con_bloques_malos_http(cliente):
     genesis = cadena_de(cliente)[0]
+    # Pasa un minuto en el reloj de la red: el bloque fabricado aquí no queda en el futuro (§21.2).
+    dejar_pasar_tiempo(cliente.application.extensions["gestor"].actual())
     extendida = extender_cadena([genesis], [firmar_tx(SEMILLA, "N10", "N09", 1, timestamp_siguiente([genesis]))])
     malas = [
         [genesis, {**extendida[1], "hash": "f" * 64}],
@@ -380,7 +383,8 @@ def test_c4_recibir_cadena_con_bloques_malos_http(cliente):
     datos = exito(cliente.post("/api/nodos/N02/recibir", json={"cadena": extendida}))
     assert datos["acepto"] is True
     final = estado(cliente)
-    assert nodo_de(final, "N02")["altura"] == 1 and final["sincronizados"] is False
+    # N02 la adopta y la difunde: los demás también la validan y la adoptan.
+    assert nodo_de(final, "N02")["altura"] == 1 and final["altura_red"] == 1 and final["sincronizados"] is True
     assert final["invariantes_ok"] is True
 
 

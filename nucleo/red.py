@@ -7,10 +7,12 @@ compartidos por todos como en una red real.
 
 import copy
 
+from nucleo.bloque import hash_bloque, validar_estructura_bloque
 from nucleo.entradas import texto_visible
 from nucleo.errores import NoEncontrado
 from nucleo.libro import Libro
-from nucleo.validacion import evaluar_cadena_recibida, validar_transaccion_nueva
+from nucleo.validacion import (MAX_BLOQUES_CADENA, evaluar_cadena_recibida, revisar_sin_saldos, validar_bloque,
+                               validar_cadena, validar_transaccion_nueva)
 
 TIMESTAMP_SIN_LIMITE = 10**15   # al revalidar, las pendientes ya pasaron la revisión del tiempo
 
@@ -38,21 +40,104 @@ class Nodo:
         """Hash del último bloque de su cadena."""
         return self.cadena[-1]["hash"]
 
-    def recibir_cadena(self, cadena, genesis: dict, timestamp_max: int | None = None) -> tuple[bool, str]:
+    def recibir_cadena(self, cadena, genesis: dict, timestamp_max: int | None = None,
+                       compartir: bool = False) -> tuple[bool, str]:
         """Valida una cadena recibida y la adopta si es válida y más larga. Nunca lanza.
 
         `timestamp_max` (opcional) es la hora del nodo: rechaza bloques fechados en el futuro.
+        `compartir`: la cadena es la de otro nodo de la red, cuyos bloques nunca se
+        modifican; se guardan esos mismos bloques en vez de copiarlos.
+
+        Se valida la cadena COMPLETA: a cada bloque recibido se le recalcula el
+        hash. Mientras ese hash recalculado sea igual al del bloque que el nodo ya
+        tiene en la misma posición (y que ya validó con todas las reglas al
+        adoptarlo), el contenido es idéntico y sus firmas, saldos y consenso ya
+        están comprobados. A partir del primer bloque distinto se aplican todas
+        las reglas, partiendo del libro de saldos del nodo. El resultado es el
+        mismo que validar desde el génesis, pero sin repetir las firmas y saldos
+        que el nodo ya revisó.
         """
         try:
-            acepta, motivo, libro = evaluar_cadena_recibida(cadena, self.cadena, genesis, timestamp_max)
+            propia = self.cadena
+            conocidos = self._bloques_conocidos(cadena, genesis)
+            if conocidos and conocidos == len(cadena):
+                # Es la propia o un pedazo inicial de ella: válida, pero no más larga (regla d).
+                return False, f"no es más larga que la propia ({len(cadena) - 1} ≤ {len(propia) - 1})"
+            if conocidos == len(propia) and len(cadena) <= MAX_BLOQUES_CADENA:
+                # Extiende la propia: se validan sólo los bloques nuevos.
+                libro = self.libro.clonar()
+                for i in range(conocidos, len(cadena)):
+                    error = validar_bloque(cadena[i], cadena[i - 1], libro, genesis, timestamp_max=timestamp_max)
+                    if error:
+                        return False, error
+                nuevos = cadena[conocidos:]
+                self.cadena = propia + (list(nuevos) if compartir else copy.deepcopy(nuevos))
+                self.libro = libro
+                return True, "aceptada"
+            if 0 < conocidos < len(cadena) and len(cadena) <= MAX_BLOQUES_CADENA:
+                # Se separa de la propia en el bloque `conocidos` (los anteriores ya son válidos).
+                # Si ese bloque falla en su forma, enlace, hash o consenso, ése es justo el primer
+                # error que daría validar toda la cadena: no hace falta revisar el resto.
+                error = revisar_sin_saldos(cadena[conocidos], cadena[conocidos - 1], genesis, timestamp_max)
+                if error:
+                    return False, error
+            acepta, motivo, libro = evaluar_cadena_recibida(cadena, propia, genesis, timestamp_max)
             if not acepta:
                 return False, motivo
-            nueva = copy.deepcopy(cadena)   # copia propia: nada se comparte con quien la envió
-            nueva[0] = copy.deepcopy(genesis)   # el génesis guardado es siempre el de confianza
-            self.cadena, self.libro = nueva, libro
+            self.cadena, self.libro = self._para_guardar(cadena, genesis, compartir), libro
             return True, motivo
         except Exception:
             return False, "la cadena tiene una estructura inválida"
+
+    def _bloques_conocidos(self, cadena, genesis: dict) -> int:
+        """Cuántos bloques del principio de `cadena` son idénticos a los que ya tiene este nodo.
+
+        A cada bloque recibido se le RECALCULA el hash y se compara con el del
+        bloque propio en esa posición (ya validado). Mismo hash recalculado ⇒
+        mismo contenido. Un bloque alterado no cuenta aunque conserve su campo
+        "hash". El génesis se compara completo.
+        """
+        propia = self.cadena
+        if type(cadena) is not list or not cadena or propia[0]["hash"] != genesis["hash"]:
+            return 0
+        if cadena[0] is not propia[0] and not validar_cadena(cadena[:1], genesis)[0]:
+            return 0
+        conocidos = 1
+        tope = min(len(cadena), len(propia))
+        while conocidos < tope and self._mismo_bloque(cadena[conocidos], propia[conocidos]):
+            conocidos += 1
+        return conocidos
+
+    @staticmethod
+    def _mismo_bloque(recibido, propio: dict) -> bool:
+        """True si `recibido` tiene exactamente el contenido del bloque propio (ya validado)."""
+        if recibido is not propio:
+            # Un objeto ajeno: primero su forma (tipos exactos), luego el hash.
+            if type(recibido) is not dict or recibido.get("hash") != propio["hash"]:
+                return False
+            if validar_estructura_bloque(recibido) is not None:
+                return False
+        # Siempre se recalcula: también detecta un bloque propio modificado en memoria.
+        return hash_bloque(recibido) == propio["hash"]
+
+    def _para_guardar(self, cadena: list, genesis: dict, compartir: bool) -> list[dict]:
+        """La cadena aceptada lista para guardarse.
+
+        El génesis es siempre el de confianza. Un bloque con el mismo hash que el
+        propio en esa posición es el mismo bloque (ambos hashes se recalcularon
+        al validar): se conserva el propio. Los demás se copian, salvo que la
+        cadena venga de otro nodo de la red (`compartir`): nada se comparte con
+        quien la envió desde fuera.
+        """
+        propia = self.cadena
+        nueva = [copy.deepcopy(genesis)]
+        for i in range(1, len(cadena)):
+            bloque = cadena[i]
+            if i < len(propia) and propia[i]["hash"] == bloque["hash"]:
+                nueva.append(propia[i])
+            else:
+                nueva.append(bloque if compartir else copy.deepcopy(bloque))
+        return nueva
 
     def resumen(self) -> dict:
         """Datos básicos del nodo para la interfaz."""
@@ -114,8 +199,14 @@ class Red:
 
     # ------------------------------------------------------------ cadenas
 
-    def difundir(self, cadena, origen_id: str) -> list[dict]:
-        """Envía la cadena a todos los nodos (menos el origen); cada uno decide si la adopta."""
+    def difundir(self, cadena, origen_id: str, timestamp_max: int | None = None) -> list[dict]:
+        """Envía la cadena a todos los nodos (menos el origen); cada uno decide si la adopta.
+
+        `timestamp_max` (opcional) es la hora de los nodos: rechazan bloques fechados después.
+        """
+        origen = self.nodos.get(origen_id) if isinstance(origen_id, str) else None
+        # La cadena del propio origen ya es de la red (sus bloques no cambian): no hace falta copiarla.
+        compartir = origen is not None and cadena is origen.cadena
         resultados = []
         for nodo in self.nodos.values():
             if nodo.id == origen_id:
@@ -123,7 +214,7 @@ class Red:
             if not nodo.conectado:
                 resultados.append({"nodo": nodo.id, "acepto": False, "motivo": "desconectado"})
                 continue
-            acepto, motivo = nodo.recibir_cadena(cadena, self.genesis)
+            acepto, motivo = nodo.recibir_cadena(cadena, self.genesis, timestamp_max, compartir=compartir)
             resultados.append({"nodo": nodo.id, "acepto": acepto, "motivo": motivo})
         return resultados
 
@@ -138,7 +229,7 @@ class Red:
             # Una cadena que no es más larga se rechazaría de todos modos (regla d): se omite.
             if len(otro.cadena) <= len(nodo.cadena):
                 continue
-            acepto, _ = nodo.recibir_cadena(otro.cadena, self.genesis)
+            acepto, _ = nodo.recibir_cadena(otro.cadena, self.genesis, compartir=True)
             if acepto:
                 adopto_de = otro.id
         return {"nodo": nodo.id, "altura_antes": altura_antes, "altura_despues": nodo.altura,

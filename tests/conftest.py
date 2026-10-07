@@ -143,6 +143,19 @@ def avanzar_hasta(sim: Simulador, objetivo: str, max_pasos: int = 50) -> None:
     raise AssertionError(f"No se llegó al estado {objetivo} en {max_pasos} pasos")
 
 
+def dejar_pasar_tiempo(sim: Simulador, ms: int = 60_000) -> None:
+    """Avanza el reloj simulado `ms` milisegundos (como si pasara el tiempo).
+
+    Los nodos rechazan bloques fechados después de su hora (§21.2:
+    timestamp_max = reloj.actual()). Las pruebas que fabrican bloques fuera del
+    simulador con timestamps posteriores al último bloque lo usan antes de
+    enviarlos.
+    """
+    objetivo = sim.reloj.actual() + ms
+    while sim.reloj.actual() < objetivo:
+        sim.reloj.ahora()
+
+
 def minar_bloques(sim: Simulador, cantidad: int, monto: int = 1) -> None:
     """Mina `cantidad` bloques PoW uno por uno, cada uno con una transacción nueva.
 

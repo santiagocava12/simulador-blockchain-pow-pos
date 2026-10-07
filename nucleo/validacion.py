@@ -121,6 +121,8 @@ def _revisar_bloque(bloque, anterior: dict, libro: Libro, genesis: dict, exigir_
              else _revisar_consenso_pos(bloque, directorio, exigir_votos))
     if error:
         return f"Bloque {n}: {error}"
+    if libro is _SIN_SALDOS:   # sólo se pidió revisar forma, enlace, hash, tiempo y consenso
+        return None
     # 8. Saldos, firmas, doble gasto, castigos y recompensa.
     try:
         libro.aplicar_bloque(bloque)
@@ -172,6 +174,21 @@ def validar_bloque(bloque, anterior, libro: Libro, genesis: dict, exigir_votos: 
     """
     try:
         return _revisar_bloque(bloque, anterior, libro, genesis, exigir_votos, timestamp_max)
+    except Exception:
+        return f"Bloque {_numero_para_mensaje(bloque, anterior)}: estructura inválida"
+
+
+_SIN_SALDOS = object()   # marca para revisar un bloque sin aplicarlo a un libro
+
+
+def revisar_sin_saldos(bloque, anterior, genesis: dict, timestamp_max: int | None = None) -> str | None:
+    """Sólo los pasos 1–7 de validar_bloque: forma, enlace, hash, tiempo y consenso.
+
+    No dependen de los saldos, así que no hace falta el libro. Devuelve None o el
+    mensaje del primer fallo (el mismo que daría validar_bloque). Nunca lanza.
+    """
+    try:
+        return _revisar_bloque(bloque, anterior, _SIN_SALDOS, genesis, True, timestamp_max)
     except Exception:
         return f"Bloque {_numero_para_mensaje(bloque, anterior)}: estructura inválida"
 
