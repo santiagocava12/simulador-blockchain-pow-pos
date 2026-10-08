@@ -13,7 +13,7 @@ pasa en la red.
 | Profesor | Dr. José de Jesús Ángel Ángel |
 | Integrantes | Santiago Cavazos Anduaga y Emilio Martinez |
 | Fecha de entrega | 8 de octubre de 2026 |
-| Video (6 min 29 s) | [https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0) ([descargar mp4](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/download/v1.0/Video_Simulador_Blockchain.mp4)) · guion en [`docs/GUION_VIDEO.md`](docs/GUION_VIDEO.md) |
+| Video (6 min 29 s, con subtítulos, sin audio) | [https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0) ([descargar mp4](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/download/v1.0/Video_Simulador_Blockchain.mp4)) · guion en [`docs/GUION_VIDEO.md`](docs/GUION_VIDEO.md) |
 | Repositorio | https://github.com/santiagocava12/simulador-blockchain-pow-pos |
 | Reporte (máx. 4 páginas) | [`docs/reporte/Reporte_Simulador_Blockchain.pdf`](docs/reporte/Reporte_Simulador_Blockchain.pdf) |
 
