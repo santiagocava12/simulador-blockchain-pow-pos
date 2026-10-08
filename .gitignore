@@ -7,3 +7,12 @@ instance/
 .DS_Store
 docs/_build/
 .claude/
+
+# Herramientas y salidas del video (no son parte de la app)
+.venv-video/
+docs/video/*.mp4
+docs/video/*.mp3
+docs/video/*.wav
+docs/video/salida/
+docs/video/tmp/
+docs/video/__pycache__/

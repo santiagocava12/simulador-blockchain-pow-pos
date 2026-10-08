@@ -11,12 +11,13 @@ pasa en la red.
 |---|---|
 | Materia | Examen de MT · Universidad Anáhuac México, Facultad de Ingeniería |
 | Profesor | Dr. José de Jesús Ángel Ángel |
-| Integrantes | Santiago Cavazos Anduaga, [otros integrantes] |
-| Fecha de entrega | [por definir] |
-| Video (5 a 8 min) | [pegar aquí la liga del video] · guion en [`docs/GUION_VIDEO.md`](docs/GUION_VIDEO.md) |
+| Integrantes | Santiago Cavazos Anduaga y Emilio Martinez |
+| Fecha de entrega | 8 de octubre de 2026 |
+| Video (6 min 29 s) | [https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/tag/v1.0) ([descargar mp4](https://github.com/santiagocava12/simulador-blockchain-pow-pos/releases/download/v1.0/Video_Simulador_Blockchain.mp4)) · guion en [`docs/GUION_VIDEO.md`](docs/GUION_VIDEO.md) |
+| Repositorio | https://github.com/santiagocava12/simulador-blockchain-pow-pos |
 | Reporte (máx. 4 páginas) | [`docs/reporte/Reporte_Simulador_Blockchain.pdf`](docs/reporte/Reporte_Simulador_Blockchain.pdf) |
 
-<!-- CAPTURA: pantalla completa en PoW con las 4 zonas (encabezado, barra «Ahora», pasos y bitácora) -->
+![Simulador en PoW: barra «Ahora», pasos, carrera de mineros y bitácora](docs/reporte/img/fig_pow.png)
 
 ## Contenido
 
@@ -171,13 +172,13 @@ en promedio ≈ 4,096 intentos»). Semilla, intentos por ronda, ritmo de la anim
 reloj y regla de castigo están en **Opciones avanzadas**. «Crear red nueva» pide
 confirmación porque borra la cadena, las transacciones y la bitácora.
 
-<!-- CAPTURA: paso 1, formulario «Crear una red nueva» con la vista previa de la dificultad -->
+![Paso 1: crear una red nueva](docs/reporte/img/readme_paso1.png)
 
 **2 · Crear transacciones.** «De», «Para» y «Monto» → **Firmar y enviar** (la firma se
 hace con la clave del emisor y la red la verifica), o **Generar 3 al azar**. La tabla
 «En espera» muestra las pendientes con su firma ✓.
 
-<!-- CAPTURA: paso 2, transacción N01 → N02 enviada y tabla «En espera» -->
+![Paso 2: transacción firmada y lista «En espera»](docs/reporte/img/readme_paso2.png)
 
 **3 · Minar (PoW) o Votar (PoS).**
 - *PoW:* **Minar 1 bloque**, **Minar 10 seguidos** o **Detener**. La **carrera de
@@ -191,15 +192,15 @@ hace con la clave del emisor y la red la verifica), o **Generar 3 al azar**. La 
   y «Cancelar ronda». La barra del **sorteo** reparte boletos según la apuesta; la barra
   de **votación** marca 2/3 y escribe la regla en números (3 × V ≥ 2 × A).
 
-<!-- CAPTURA: paso 3 PoW, carrera de mineros con el ganador y los puntitos de confirmación -->
-<!-- CAPTURA: paso 3 PoS, sorteo y barra de votación con la marca de 2/3 -->
+![Paso 3 en PoW: carrera de mineros y recompensas por madurar](docs/reporte/img/figura4_pow.png)
+![Paso 3 en PoS: rechazo de un proponente tramposo, castigo y nuevo sorteo](docs/reporte/img/fig_pos.png)
 
 **4 · Cadena y nodos.** Tabla de nodos (estado, bloque, último hash, sincronizado,
 disponible, por madurar o apuesta) con **Ver cadena** y **Desconectar / Reconectar**.
 Debajo, la cadena del nodo elegido bloque por bloque, con «hash anterior ✓ coincide» y
 **Ver JSON completo**.
 
-<!-- CAPTURA: paso 4, tabla de nodos con N10 atrasado y la cadena de N01 -->
+![Paso 4: tabla de nodos con N10 desconectado y atrasado](docs/reporte/img/fig_general.png)
 
 **5 · Pruebas y ataques.** Cada tarjeta dice **Qué hace** y **Debería pasar**, tiene un
 botón **▶ Probar** y muestra el resultado: verde «Correcto» si la red se comportó como
@@ -207,7 +208,7 @@ debía (un rechazo esperado es éxito) y «Ver detalle técnico» con cada llama
 filtro **★ Para el video** deja a mano C5, W4, R1 y T4 (PoW) o S6, S3, S5 y R1 (PoS).
 La tarjeta **Nodos tramposos** vuelve tramposo a un nodo con una trampa elegida.
 
-<!-- CAPTURA: paso 5, tarjeta «Alterar un bloque del medio y difundirlo» con el resultado verde -->
+![Paso 5: pruebas y ataques](docs/reporte/img/readme_paso5.png)
 
 ## Casos de la guía y dónde se prueban
 
