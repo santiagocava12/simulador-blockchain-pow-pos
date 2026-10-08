@@ -796,12 +796,16 @@ def test_transaccion_nueva_valida():
     (lambda: {**tx("N01", "N02", 5), "firma": None}, EntradaInvalida, "firma_invalida", "Firma inválida"),
     (lambda: tx("N01", "N02", 101), EntradaInvalida, "saldo_insuficiente",
      "Saldo insuficiente: N01 tiene 100 disponibles e intenta enviar 101"),
-    (lambda: {**tx("N01", "N02", 5), "emisor": lista_anidada()}, EntradaInvalida, "entrada_invalida", "estructura inválida"),
+    # Python ≤ 3.13 no puede serializar 10 000 niveles ("estructura inválida"); 3.14 sí, y entonces
+    # el id ya no coincide con los datos. En ambos casos: 400 entrada_invalida, nunca otra excepción.
+    (lambda: {**tx("N01", "N02", 5), "emisor": lista_anidada()}, EntradaInvalida, "entrada_invalida",
+     ("estructura inválida", "id de la transacción no coincide")),
 ])
 def test_transaccion_nueva_errores(hacer, tipo, codigo, fragmento):
     with pytest.raises(tipo) as info:
         validar_nueva(hacer())
-    assert info.value.codigo == codigo and fragmento in info.value.mensaje
+    fragmentos = fragmento if isinstance(fragmento, tuple) else (fragmento,)
+    assert info.value.codigo == codigo and any(f in info.value.mensaje for f in fragmentos)
 
 
 def test_transaccion_nueva_firma_alterada():

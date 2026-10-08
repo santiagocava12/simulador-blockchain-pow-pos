@@ -37,12 +37,13 @@ from nucleo.pos import (RondaPos, abrir_votacion, aceptar_bloque, avanzar_tras_r
                         cancelar_ronda, castigar_proponente, contar_votos, ejecutar_sorteo, fijar_candidato,
                         registrar_voto)
 from nucleo.pos import fijar_apuestas as fijar_apuestas_ronda
-from nucleo.pow import (SesionPow, bloque_ganador, cancelar_sesion, ordenar_hallazgos, reanudar_tras_rechazo,
-                        registrar_ganador, revisar_limite, ronda_pow, terminar_sesion)
+from nucleo.pow import (SesionPow, bloque_ganador, cancelar_sesion, ordenar_hallazgos, preparar_hash,
+                        reanudar_tras_rechazo, registrar_ganador, revisar_limite, ronda_pow, terminar_sesion)
 from nucleo.red import TIMESTAMP_SIN_LIMITE, Red
-from nucleo.reglas import mensaje_voto, probabilidades
+from nucleo.reglas import cumple_dificultad, mensaje_voto, probabilidades
 from nucleo.reloj import Reloj
-from nucleo.trampas import TRAMPAS, TRAMPAS_PROPONENTE, aplicar_trampa_recompensa, transacciones_tramposas
+from nucleo.trampas import (TRAMPAS, TRAMPAS_PROPONENTE, TRAMPAS_VOTANTE, aplicar_trampa_recompensa,
+                            transacciones_tramposas)
 from nucleo.validacion import validar_bloque, validar_cadena, validar_candidato, validar_transaccion_nueva
 
 MAX_BLOQUES_MINADOS = 20          # resultados PoW recientes que muestra la interfaz
@@ -51,6 +52,7 @@ MAX_BLOQUES_DETALLE = 200         # bloques resumidos en detalle_nodo
 MAX_CASTIGOS_BLOQUE = 500         # tope de castigos que caben en un bloque (bloque.py)
 MAX_LOTE = 50                     # transacciones aleatorias, bloques o rondas por pedido
 PASO_MINIMO_POS_MS = 800          # una transición PoS automática dura al menos esto (para que se vea)
+MAX_INTENTOS_TRAMPOSO = 3_000_000  # nonces que prueba un nodo al minar su bloque tramposo (ataque PoW)
 
 TIPOS_ALTERACION = ("monto", "monto_rehash", "hash", "hash_anterior", "recompensa")
 TIPOS_ATAQUE_TX = ("firma_alterada", "otra_clave", "doble_gasto", "repetida")
@@ -311,14 +313,16 @@ class Simulador:
         comprometido = self.red.comprometido(self._apuestas() if con_apuestas else None)
         return {id_nodo: max(0, libro.saldo(id_nodo) - comprometido[id_nodo]) for id_nodo in self.red.ids()}
 
-    def _transacciones_para_bloque(self, apuestas: dict[str, int]) -> list[dict]:
+    def _transacciones_para_bloque(self, apuestas: dict[str, int], libro=None) -> list[dict]:
         """Hasta max_tx_por_bloque pendientes, en orden, que siguen siendo válidas.
 
-        Se revisan contra el libro de la red, contando como comprometidos los
-        castigos (en PoS se aplican antes que las transacciones), las apuestas
-        (deben seguir cubiertas) y las transacciones ya elegidas.
+        Se revisan contra el libro de la red (o el `libro` dado: el de la cadena de
+        un nodo), contando como comprometidos los castigos (en PoS se aplican antes
+        que las transacciones), las apuestas (deben seguir cubiertas) y las
+        transacciones ya elegidas.
         """
-        libro = self.red.libro_referencia()
+        if libro is None:
+            libro = self.red.libro_referencia()
         directorio = self.red.genesis["directorio"]
         comprometido = {id_nodo: 0 for id_nodo in self.red.ids()}
         for castigo in self.red.castigos_pendientes:
@@ -844,6 +848,9 @@ class Simulador:
                            self.config.dificultad, self.config.max_rondas, bloques_restantes=bloques,
                            auto_tx=auto_tx, plantilla=plantilla, txs=txs)
         sesion.fijar_conectados(conectados)
+        if len(conectados) < len(self.red.nodos):   # los desconectados no minan
+            sesion.mensaje = sesion.mensaje.replace(f"{sesion.N} mineros",
+                                                    f"{len(conectados)} mineros conectados", 1)
         tramposos = [f"{n.id} ({n.trampa})" for n in self.red.nodos.values()
                      if n.deshonesto and n.trampa in TRAMPAS_PROPONENTE]
         extra = f" Mineros deshonestos: {', '.join(tramposos)}." if tramposos else ""
@@ -1140,8 +1147,9 @@ class Simulador:
                 raise Conflicto(f"La ronda ya avanzó (estado actual: {ronda.estado}); actualice la vista",
                                 "estado_cambio", detalles)
             if (numero is not None and numero != ronda.numero) or (intento is not None and intento != ronda.intento):
-                raise Conflicto(f"La ronda ya avanzó: ahora es la del bloque {ronda.numero}, intento {ronda.intento} "
-                                f"(estado {ronda.estado}); actualice la vista", "estado_cambio", detalles)
+                raise Conflicto(f"La ronda ya avanzó: ahora es la del bloque {ronda.numero}, "
+                                f"intento {ronda.intento + 1} (estado {ronda.estado}); actualice la vista",
+                                "estado_cambio", detalles)
         self._ronda_en_curso("avanzarla")
         return self._avanzar_ronda()
 
@@ -1216,9 +1224,10 @@ class Simulador:
         proponente = ejecutar_sorteo(ronda)
         apuesta, total = ronda.apuestas[proponente], ronda.total_apostado()
         probabilidad = probabilidades(ronda.validadores)[proponente]
-        self._evento("sorteo", f"Sorteo del bloque {ronda.numero}, intento {ronda.intento}: salió {proponente} "
+        self._evento("sorteo", f"Sorteo del bloque {ronda.numero}, intento {ronda.intento + 1}: salió {proponente} "
                                f"(apuesta {apuesta} de A = {total}, probabilidad {probabilidad:.1%}). La semilla es "
-                               f"pública: sha256(hash_anterior|{ronda.numero}|{ronda.intento})",
+                               f"pública: sha256(hash_anterior|{ronda.numero}|{ronda.intento}); en la semilla los "
+                               f"intentos se cuentan desde 0",
                      nodo=proponente, bloque=ronda.numero, intento=ronda.intento, probabilidad=probabilidad)
         self._evento("pos_estado", f"Bloque {ronda.numero}: {antes} → SORTEO", bloque=ronda.numero, estado="SORTEO")
         return ronda.mensaje
@@ -1316,7 +1325,7 @@ class Simulador:
         self._evento("pos_estado", f"Bloque {ronda.numero}: VOTACION → RECHAZADO. {motivo}", bloque=ronda.numero,
                      estado="RECHAZADO", nodo=castigo["nodo"])
         self._evento("bloque_rechazado", f"El bloque {ronda.numero} que propuso {castigo['nodo']} (intento "
-                                         f"{castigo['intento']}) fue rechazado y nadie lo agrega: {motivo}",
+                                         f"{castigo['intento'] + 1}) fue rechazado y nadie lo agrega: {motivo}",
                      nodo=castigo["nodo"], bloque=ronda.numero, motivo=motivo)
         self._evento("castigo", f"{castigo['nodo']} es castigado con {castigo['monto']} ({regla}) y queda fuera de la "
                                 f"ronda. El castigo se quema y se registrará en el siguiente bloque aceptado",
@@ -1335,8 +1344,8 @@ class Simulador:
                                    "intento": ronda.intento, "V_favor": favor, "A": total,
                                    "aceptaron": aceptaron, "total": len(self.red.nodos)}
         self._evento("pos_estado", f"Bloque {ronda.numero}: VOTACION → ACEPTADO. {favor} de A = {total} a favor "
-                                   f"(≥ 2/3); propuesto por {proponente.id} en el intento {ronda.intento}. Lo agregaron "
-                                   f"{aceptaron} de {len(self.red.nodos)} nodos; las apuestas se liberan",
+                                   f"(≥ 2/3); propuesto por {proponente.id} en el intento {ronda.intento + 1}. "
+                                   f"Lo agregaron {aceptaron} de {len(self.red.nodos)} nodos; las apuestas se liberan",
                      nodo=proponente.id, bloque=ronda.numero, estado="ACEPTADO", hash=bloque["hash"])
         for castigo in bloque["castigos"]:
             self._evento("castigo", f"El castigo de {castigo['nodo']} ({castigo['monto']}) quedó registrado en el "
@@ -1564,6 +1573,136 @@ class Simulador:
         if rechazos < len(resultados):
             self._tras_cambio_de_red()
         return {"mensaje": mensaje, "resultados": resultados, "rechazos": rechazos}
+
+    @_operacion()
+    def ataque_bloque_tramposo(self, nodo, trampa) -> dict:
+        """PoW: el nodo arma un bloque con una trampa, lo mina y lo difunde; ningún nodo lo agrega.
+
+        El bloque va sobre la punta de la cadena del propio nodo y lleva las
+        pendientes válidas (como mucho max_tx_por_bloque; si no hay, una
+        transacción válida de 1 moneda creada sólo para este bloque), las
+        transacciones tramposas al final y la recompensa (10 veces mayor con
+        "recompensa_falsa"). Se mina como cualquier bloque (nonces 0, 1, 2, …) y lo
+        reciben todos los nodos conectados, incluido el propio: cada uno lo valida
+        con su copia antes de agregarlo. No hace falta marcar al nodo como
+        deshonesto ni esperar a que gane una carrera: el rechazo se ve siempre.
+        Sólo avanzan el reloj, la bitácora y la versión.
+        """
+        if self.config.modo != "pow":
+            raise Conflicto("En Proof of Stake usa el escenario del proponente tramposo", "modo_incorrecto")
+        id_nodo = self._leer_nodo(nodo, "El nodo atacante")
+        if isinstance(trampa, str) and trampa.strip().lower() in TRAMPAS_VOTANTE:
+            raise EntradaInvalida(f"La trampa «{trampa.strip().lower()}» es de votación (sólo PoS) y no cambia el "
+                                  f"bloque; elija una de: {', '.join(TRAMPAS_PROPONENTE)}")
+        trampa = leer_opcion(trampa, "La trampa del bloque", TRAMPAS_PROPONENTE)
+        origen = self.red.nodo(id_nodo)
+        self._exigir_conectado(origen, "difundir un bloque tramposo")
+        sesion = self.sesion_pow
+        if sesion is not None and sesion.activa:
+            raise Conflicto(f"Se está minando el bloque {sesion.numero} (ronda {sesion.ronda}): cancele la minería o "
+                            f"espere a que termine para probar el bloque tramposo", "mineria_en_curso")
+
+        bloque = self._armar_bloque_tramposo(origen, trampa)
+        intentos = self._minar_bloque_tramposo(id_nodo, bloque)
+        cadena = origen.cadena + [bloque]   # los bloques anteriores son los mismos: no se modifican
+        hora = self._hora_maxima()
+        resultados = []
+        for receptor in self.red.conectados():   # todos los conectados, también el que lo armó
+            acepto, motivo = receptor.recibir_cadena(cadena, self.red.genesis, hora)
+            resultados.append({"nodo": receptor.id, "acepto": acepto, "motivo": motivo})
+        rechazos = sum(1 for r in resultados if not r["acepto"])
+        aceptaron = len(resultados) - rechazos
+        motivos = Counter(r["motivo"] for r in resultados if not r["acepto"])
+        motivo = motivos.most_common(1)[0][0] if motivos else None
+        numero = bloque["numero"]
+
+        desconectados = len(self.red.nodos) - len(resultados)
+        nota = ""
+        if desconectados:
+            quien = _plural(desconectados, "nodo desconectado no lo recibió", "nodos desconectados no lo recibieron")
+            nota = f" ({quien})"
+        final = "Ninguna cadena cambió" if not aceptaron else _plural(aceptaron, "nodo lo agregó", "nodos lo agregaron")
+        mensaje = (f"{id_nodo} armó el bloque {numero} con una trampa ({DESCRIPCION_TRAMPAS[trampa]}), lo minó con "
+                   f"el nonce {bloque['nonce']} ({_plural(intentos, 'intento', 'intentos')}, hash "
+                   f"{_corto(bloque['hash'])}) y lo difundió a los nodos conectados, incluido él mismo: {rechazos} "
+                   f"de {len(resultados)} {'lo rechazó' if rechazos == 1 else 'lo rechazaron'} "
+                   f"({_resumir_rechazos(resultados)}){nota}. {final}")
+        self._evento("ataque", mensaje, nodo=id_nodo, bloque=numero, trampa=trampa, rechazos=rechazos)
+        if motivo is not None:
+            quienes = _plural(rechazos, "nodo lo rechazó", "nodos lo rechazaron")
+            nadie = " y nadie lo agrega" if not aceptaron else ""
+            self._evento("bloque_rechazado",
+                         f"{id_nodo} encontró el nonce {bloque['nonce']} (hash {_corto(bloque['hash'])}), pero su "
+                         f"bloque {numero} es inválido{nadie}: {motivo} ({quienes})",
+                         nodo=id_nodo, bloque=numero, motivo=motivo, trampa=trampa, rechazos=rechazos)
+        if aceptaron:
+            self._tras_cambio_de_red()
+        return {"mensaje": mensaje, "nodo": id_nodo, "trampa": trampa, "bloque": resumen_bloque(bloque),
+                "intentos": intentos, "motivo": motivo, "resultados": resultados, "rechazos": rechazos}
+
+    def _armar_bloque_tramposo(self, origen, trampa: str) -> dict:
+        """Bloque del nodo sobre la punta de SU cadena: pendientes válidas + trampas + recompensa (sin minar)."""
+        libro = origen.libro
+        ids = self.red.ids()
+        otro = ids[(ids.index(origen.id) + 1) % len(ids)]
+        txs = self._transacciones_para_bloque({}, libro)
+        if not txs:   # un bloque necesita al menos una transacción de usuario
+            txs = [self._transaccion_de_relleno(origen.id, otro, libro)]
+        # Como en la minería: las trampas se firman ANTES de pedir el timestamp del
+        # bloque (una transacción no puede ser posterior a su bloque) y van al final.
+        tramposas = transacciones_tramposas(trampa, origen.id, otro, libro.saldo(origen.id),
+                                            self._claves[origen.id], self.reloj, txs)
+        anterior = origen.cadena[-1]
+        timestamp = max(self.reloj.ahora(), anterior["timestamp"] + 1)
+        recompensa = aplicar_trampa_recompensa(self.config.recompensa, trampa)
+        return nuevo_bloque(anterior["numero"] + 1, timestamp, txs + tramposas, anterior["hash"], origen.id,
+                            recompensa, "pow")
+
+    def _transaccion_de_relleno(self, id_nodo: str, otro: str, libro) -> dict:
+        """Transacción válida de 1 moneda sólo para el bloque tramposo (no entra a pendientes).
+
+        La firma el propio nodo hacia `otro`. Si el nodo no tiene saldo, el primer
+        nodo con saldo (desde `otro`) le paga 1: así el bloque sólo falla por la
+        trampa. En PoW el dinero no se quema, así que siempre hay alguien con saldo.
+        """
+        if libro.saldo(id_nodo) >= 1:
+            emisor, receptor = id_nodo, otro
+        else:
+            ids = self.red.ids()
+            inicio = ids.index(otro)
+            orden = ids[inicio:] + ids[:inicio]
+            emisor = next((i for i in orden if i != id_nodo and libro.saldo(i) >= 1), None)
+            if emisor is None:
+                raise Conflicto("Ningún nodo tiene saldo para la transacción del bloque tramposo", "sin_saldo")
+            receptor = id_nodo
+        return firmar_transaccion(emisor, receptor, 1, self.reloj.ahora(), self._claves[emisor])
+
+    def _minar_bloque_tramposo(self, id_nodo: str, bloque: dict) -> int:
+        """Prueba los nonces 0, 1, 2, … hasta cumplir la dificultad y devuelve los intentos.
+
+        Sólo al encontrarlo se fijan el nonce y el hash del bloque; si se agota el
+        tope (MAX_INTENTOS_TRAMPOSO) el bloque queda como estaba y se lanza
+        Conflicto "dificultad_alta" (la operación se revierte entera).
+        """
+        dificultad = self.config.dificultad
+        tope = MAX_INTENTOS_TRAMPOSO
+        prefijo = "0" * dificultad
+        calcular = preparar_hash(bloque)
+        for nonce in range(tope):
+            if not calcular(nonce).startswith(prefijo):
+                continue
+            # El atajo es sólo una optimización: el hallazgo se confirma con hash_bloque.
+            hash_hex = hash_bloque({**bloque, "nonce": nonce})
+            if cumple_dificultad(hash_hex, dificultad):
+                bloque["nonce"], bloque["hash"] = nonce, hash_hex
+                return nonce + 1
+        intentos = f"{tope:,}".replace(",", " ")
+        esperados = f"{16 ** dificultad:,}".replace(",", " ")
+        ceros = _plural(dificultad, "cero", "ceros")
+        raise Conflicto(f"{id_nodo} probó {intentos} nonces y ninguno dio un hash que empiece con {ceros} (con "
+                        f"dificultad {dificultad} se esperan unos {esperados} intentos). Para ver este ataque "
+                        f"inicie una simulación con menor dificultad; no se cambió nada", "dificultad_alta",
+                        {"intentos": tope, "dificultad": dificultad})
 
     def _anotar_cadena_rechazada(self, origen: str, que: str, resultados: list[dict]) -> None:
         """Evento "cadena_rechazada" con los motivos de los nodos que revisaron la cadena y la rechazaron."""

@@ -172,7 +172,7 @@ def _mensaje_votacion(ronda: RondaPos) -> str:
     v_favor, v_contra = _sumar_votos(ronda.votos)
     total = ronda.total_apostado()
     estado = "alcanza" if alcanza_umbral(v_favor, total) else "no alcanza"
-    return (f"Votación del intento {ronda.intento}: {v_favor} a favor y {v_contra} en contra de A = {total}; "
+    return (f"Votación del intento {ronda.intento + 1}: {v_favor} a favor y {v_contra} en contra de A = {total}; "
             f"{estado} los 2/3 (3V ≥ 2A)")
 
 
@@ -231,7 +231,7 @@ def ejecutar_sorteo(ronda: RondaPos) -> str:
     ronda.proponente = proponente
     ronda.estado = "SORTEO"
     apuesta, total = ronda.apuestas[ronda.proponente], ronda.total_apostado()
-    ronda.mensaje = (f"Sorteo del intento {ronda.intento}: salió {ronda.proponente} "
+    ronda.mensaje = (f"Sorteo del intento {ronda.intento + 1}: salió {ronda.proponente} "
                      f"(apuesta {apuesta} de A = {total}, probabilidad {100 * apuesta / total:.1f} %)")
     return ronda.proponente
 

@@ -431,6 +431,13 @@ def _registrar_rutas(app: Flask, gestor: Gestor) -> None:
         resultado = sim.ataque_cadena_corta(cuerpo.get("nodo"), **opcionales(cuerpo, "quitar"))
         return exito(sim, resultado, "Ataque ejecutado: cadena corta difundida")
 
+    @app.post("/api/ataques/bloque-tramposo")
+    def ataque_bloque_tramposo():
+        cuerpo = leer_cuerpo()
+        sim = gestor.actual()
+        resultado = sim.ataque_bloque_tramposo(cuerpo.get("nodo"), cuerpo.get("trampa"))
+        return exito(sim, resultado, "Ataque ejecutado: bloque tramposo minado y difundido")
+
     @app.post("/api/ataques/transaccion")
     def ataque_transaccion():
         cuerpo = leer_cuerpo()
@@ -466,6 +473,10 @@ class ManejadorHTTP(WSGIRequestHandler):
         cuerpo = json.dumps({"ok": False, "error": mensaje, "codigo": codigo, "detalles": {"http": code}},
                             ensure_ascii=False).encode("utf-8")
         self.log_error("code %d, message %s", code, message)
+        # Con una línea de petición ilegible, Python 3.14 deja la versión en HTTP/0.9, y en
+        # HTTP/0.9 no se envían línea de estado ni cabeceras: se responde como HTTP/1.0.
+        if self.request_version == "HTTP/0.9":
+            self.request_version = "HTTP/1.0"
         self.send_response(code, message)
         self.send_header("Connection", "close")
         con_cuerpo = code >= 200 and code not in (204, 205, 304)

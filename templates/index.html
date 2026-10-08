@@ -1,591 +1,362 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <title>Simulador de blockchain · PoW y PoS</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
-  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Simulador de blockchain · PoW y PoS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+<!-- Todo el JavaScript son módulos ES nativos (sin librerías ni CDN). main.js importa al resto. -->
+<script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
-<body data-modo="">
-  <a class="saltar" href="#contenido">Saltar al contenido</a>
+<body>
+<!-- Iconos SVG: se usan con <svg><use href="#i-nombre"></use></svg> (función icono() de util.js). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-pick" viewBox="0 0 24 24"><path d="M4 20 15 9"/><path d="M8 5q9 2 11 11"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.3" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.3" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-vote" viewBox="0 0 24 24"><path d="M4 13h16v7H4z"/><path d="M8 13V4h8v9"/><path d="m10 8.5 1.5 1.5L14 7"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></symbol>
+  <symbol id="i-server" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6z"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2zm0 0a2 2 0 0 0 2 2h14"/></symbol>
+  <symbol id="i-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-4-4M20 16H6l4 4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></symbol>
+  <symbol id="i-block" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12 4 7.5M12 12l8-4.5M12 12v9"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M10 17h4v4h-4z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-chain" viewBox="0 0 24 24"><rect x="2.5" y="8" width="10" height="8" rx="4"/><rect x="11.5" y="8" width="10" height="8" rx="4"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8z"/></symbol>
+</svg>
 
-  <!-- 1. Encabezado: estado general de la red -->
-  <header class="encabezado">
-    <div class="encabezado-fila">
-      <div class="marca">
-        <span class="marca-logo" aria-hidden="true">⛓</span>
-        <div>
-          <h1>Simulador de blockchain</h1>
-          <p class="marca-subtitulo">Proof of Work y Proof of Stake</p>
-        </div>
-      </div>
-      <dl class="indicadores">
-        <div class="indicador"><dt>Modo</dt><dd id="ind-modo">—</dd></div>
-        <div class="indicador"><dt>Semilla</dt><dd id="ind-semilla" class="mono">—</dd></div>
-        <div class="indicador"><dt>Nodos</dt><dd id="ind-nodos">—</dd></div>
-        <div class="indicador"><dt>Altura de la red</dt><dd id="ind-altura">—</dd></div>
-        <div class="indicador"><dt>Sincronización</dt><dd id="ind-sincronia">—</dd></div>
-        <div class="indicador"><dt>Invariantes</dt><dd id="ind-invariantes">—</dd></div>
-        <div class="indicador"><dt>En circulación</dt><dd id="ind-circulacion">—</dd></div>
-      </dl>
-      <div class="encabezado-acciones">
-        <span id="ind-conexion" class="conexion" data-estado="conectando">Conectando…</span>
-        <button type="button" id="btn-tema" class="boton chico fantasma">Tema: automático</button>
-      </div>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+<!-- Franja de conexión: aparece si el servidor deja de responder (estado.js). -->
+<div id="banner-conexion" class="banner" role="alert" hidden></div>
+
+<div class="app">
+  <!-- ================= A. Encabezado: marca, tipo de consenso, glosario y tema ================= -->
+  <header class="top">
+    <div class="marca">
+      <span class="logo" aria-hidden="true"><svg class="ic"><use href="#i-chain"></use></svg></span>
+      <div><h1>Simulador de blockchain</h1><div class="sub">Prueba de trabajo y prueba de participación</div></div>
     </div>
-    <div id="aviso-conexion" class="aviso-conexion" role="alert" hidden>Sin conexión con el servidor; reintentando…</div>
+    <div class="modo-wrap">
+      <div class="modo" role="group" aria-label="Tipo de consenso (cambiarlo crea una red nueva)">
+        <button type="button" data-modo="pow" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-pick"></use></svg><span class="largo">Prueba de trabajo</span><span class="tag">PoW</span></button>
+        <button type="button" data-modo="pos" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-scale"></use></svg><span class="largo">Prueba de participación</span><span class="tag">PoS</span></button>
+      </div>
+      <div id="conf-modo" class="confirmar flot" hidden></div>
+      <div id="res-modo" class="res-flot" role="status"></div>
+    </div>
+    <div class="herr">
+      <button type="button" class="btn fantasma" id="btn-glosario"><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg>Glosario</button>
+      <button type="button" class="btn fantasma" id="btn-tema"><svg class="ic" aria-hidden="true"><use href="#i-contrast"></use></svg><span id="tema-txt">Tema: automático</span></button>
+    </div>
   </header>
 
-  <!-- Zona de avisos (éxito o error de cada acción) -->
-  <div id="avisos" class="avisos" aria-live="polite"></div>
-
-  <main id="contenido" class="rejilla">
-
-    <!-- 2. Nueva simulación -->
-    <section class="tarjeta" id="panel-simulacion" aria-labelledby="titulo-simulacion">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-simulacion">Nueva simulación</h2>
-        <span class="insignia alerta nota-sin-validacion">Sin validación del navegador</span>
+  <main id="contenido">
+    <!-- ================= B. Ahora: qué pasa y qué sigue (ahora.js) ================= -->
+    <section class="ahora" id="ahora" aria-labelledby="ahora-titulo" data-tono="run">
+      <h2 id="ahora-titulo" class="sr-only">Lo que está pasando ahora</h2>
+      <div class="ahora-fila">
+        <div class="ahora-texto">
+          <span class="tono run" id="ahora-tono"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg><span id="ahora-tono-txt">Conectando</span></span>
+          <p class="ahora-frase" id="ahora-frase">Conectando con el servidor…</p>
+        </div>
+        <div class="ahora-cta" id="ahora-cta"></div>
       </div>
-      <form id="form-simulacion" data-modo-form="pow" novalidate autocomplete="off">
-        <div class="campos">
-          <label class="campo">
-            <span class="etiqueta">Modo de consenso</span>
-            <select name="modo">
-              <option value="pow">PoW · prueba de trabajo</option>
-              <option value="pos">PoS · prueba de participación</option>
-            </select>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Nodos (N)</span>
-            <input name="num_nodos" type="text" inputmode="numeric" value="10">
-            <small class="ayuda">De 10 a 20</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Semilla</span>
-            <input name="semilla" type="text" value="anahuac" spellcheck="false">
-            <small class="ayuda">Misma semilla ⇒ mismos resultados</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Saldo inicial</span>
-            <input name="saldo_inicial" type="text" inputmode="numeric" value="100">
-            <small class="ayuda">De 1 a 1 000 000</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Recompensa (R)</span>
-            <input name="recompensa" type="text" inputmode="numeric" value="50">
-            <small class="ayuda">De 1 a 1 000 000</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Transacciones por bloque</span>
-            <input name="max_tx_por_bloque" type="text" inputmode="numeric" value="10">
-            <small class="ayuda">De 1 a 50</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Intervalo del motor (ms)</span>
-            <input name="intervalo_ms" type="text" inputmode="numeric" value="250">
-            <small class="ayuda">De 50 a 2000 (ritmo automático)</small>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Reloj</span>
-            <select name="reloj">
-              <option value="simulado">Simulado (reproducible)</option>
-              <option value="real">Real</option>
-            </select>
-          </label>
+      <p class="sr-only" id="ahora-vivo" aria-live="polite"></p>
+      <div id="res-ahora" role="status"></div>
+      <div class="ahora-fila2">
+        <div class="tira-caja">
+          <ul class="tira" id="tira" aria-label="Nodos de la red (toca uno para ver su cadena)"></ul>
+          <p class="leyenda" aria-hidden="true">
+            <span><svg class="ic ic-s" style="color:var(--ok)"><use href="#i-check"></use></svg>sincronizado</span>
+            <span><svg class="ic ic-s" style="color:var(--warn)"><use href="#i-x"></use></svg>atrasado</span>
+            <span id="ley-modo"></span>
+            <span><b class="excl">!</b>tramposo</span>
+            <span><svg class="ic ic-s"><use href="#i-power"></use></svg>desconectado</span>
+          </p>
         </div>
-
-        <fieldset class="grupo-campos solo-form-pow">
-          <legend>Proof of Work</legend>
-          <div class="campos">
-            <label class="campo">
-              <span class="etiqueta">Dificultad</span>
-              <input name="dificultad" type="text" inputmode="numeric" value="3">
-              <small class="ayuda">Ceros al inicio del hash (1 a 6)</small>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Intentos por ronda (k)</span>
-              <input name="intentos_por_ronda" type="text" inputmode="numeric" value="50">
-              <small class="ayuda">De 1 a 5000</small>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Máximo de rondas</span>
-              <input name="max_rondas" type="text" inputmode="numeric" value="3000">
-              <small class="ayuda">De 1 a 1 000 000</small>
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset class="grupo-campos solo-form-pos">
-          <legend>Proof of Stake</legend>
-          <div class="campos">
-            <label class="campo">
-              <span class="etiqueta">Validadores</span>
-              <select name="seleccion_validadores">
-                <option value="todos">Todos los nodos con saldo</option>
-                <option value="aleatorio">Muestra aleatoria</option>
-              </select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">¿Cuántos validadores?</span>
-              <input name="num_validadores" type="text" inputmode="numeric" value="5">
-              <small class="ayuda">Sólo con muestra aleatoria (1 a N)</small>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Regla de castigo</span>
-              <select name="regla_castigo">
-                <option value="A">A · se quema toda la apuesta</option>
-                <option value="B">B · mín(apuesta, ⌈α·valor⌉)</option>
-              </select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">α (%)</span>
-              <input name="alfa_porcentaje" type="text" inputmode="numeric" value="50">
-              <small class="ayuda">Sólo con la regla B (1 a 100)</small>
-            </label>
-          </div>
-        </fieldset>
-
-        <div class="botonera">
-          <button type="submit" class="boton primario">Crear simulación</button>
-          <button type="button" id="btn-config-actual" class="boton fantasma">Usar la configuración actual</button>
+        <div class="chips" id="ahora-chips">
+          <span class="chip" id="chip-bloque"><svg class="ic ic-s" aria-hidden="true"><use href="#i-block"></use></svg><span>Bloque —</span></span>
+          <span class="chip" id="chip-espera"><svg class="ic ic-s" aria-hidden="true"><use href="#i-clock"></use></svg><span>— en espera</span></span>
+          <span class="chip" id="chip-sync"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg><span>—</span></span>
+          <span class="chip" id="chip-dinero"><svg class="ic ic-s" aria-hidden="true"><use href="#i-coins"></use></svg><span>Dinero —</span></span>
+          <button type="button" class="ayuda-btn" data-g="circulacion" aria-label="¿Qué significa que el dinero cuadra?">?</button>
         </div>
-        <p class="ayuda">Crear una simulación reinicia toda la red, incluso a mitad de una minería o ronda.</p>
-      </form>
-    </section>
-
-    <!-- 4. Transacciones -->
-    <section class="tarjeta" id="panel-transacciones" aria-labelledby="titulo-transacciones">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-transacciones">Transacciones</h2>
-        <span class="insignia neutro"><span id="pendientes-cuenta">0</span>&nbsp;pendientes</span>
-      </div>
-      <form id="form-transaccion" novalidate autocomplete="off">
-        <div class="campos campos-3">
-          <label class="campo">
-            <span class="etiqueta">Emisor</span>
-            <select name="emisor" data-nodos="todos" data-defecto="0"></select>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Receptor</span>
-            <select name="receptor" data-nodos="todos" data-defecto="1"></select>
-          </label>
-          <label class="campo">
-            <span class="etiqueta">Monto</span>
-            <input name="monto" type="text" inputmode="numeric" placeholder="Ej. 25">
-          </label>
-        </div>
-        <p class="ayuda" id="tx-disponible"></p>
-        <div class="botonera">
-          <button type="submit" class="boton primario">Firmar y enviar</button>
-        </div>
-      </form>
-      <form id="form-aleatorias" class="fila-en-linea" novalidate autocomplete="off">
-        <label class="campo en-linea">
-          <span class="etiqueta">Cantidad</span>
-          <input name="cantidad" type="text" inputmode="numeric" value="5" size="4">
-        </label>
-        <button type="submit" class="boton">Generar aleatorias</button>
-        <small class="ayuda">De 1 a 50, válidas y firmadas</small>
-      </form>
-      <h3 class="subtitulo-panel">Pendientes</h3>
-      <div class="tabla-desplazable tabla-baja">
-        <table class="tabla">
-          <thead>
-            <tr><th>ID</th><th>Emisor → receptor</th><th class="num">Monto</th><th>Marca de tiempo</th><th>Firma</th></tr>
-          </thead>
-          <tbody id="cuerpo-pendientes"></tbody>
-        </table>
-      </div>
-      <p id="pendientes-vacio" class="vacio">No hay transacciones pendientes.</p>
-      <div class="solo-pos">
-        <h3 class="subtitulo-panel">Castigos por registrar</h3>
-        <p class="ayuda">Se restan del saldo al instante y quedan en el siguiente bloque aceptado.</p>
-        <ul id="lista-castigos-pendientes" class="lista-simple"></ul>
       </div>
     </section>
 
-    <!-- 5. PoW -->
-    <section class="tarjeta consenso solo-pow" id="panel-pow" aria-labelledby="titulo-pow">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-pow">Minería (PoW)</h2>
-        <span id="pow-estado" class="insignia neutro">—</span>
-      </div>
-      <div class="botonera">
-        <button type="button" id="btn-minar-1" class="boton primario">Minar 1 bloque</button>
-        <button type="button" id="btn-minar-10" class="boton">Minar 10 bloques seguidos</button>
-        <button type="button" id="btn-cancelar-mineria" class="boton peligro">Cancelar</button>
-      </div>
-      <p class="ayuda">«Minar 10» genera transacciones aleatorias cuando no hay pendientes. En cada ronda, cada minero conectado prueba k nonces distintos.</p>
-      <dl class="datos-rejilla">
-        <div><dt>Bloque objetivo</dt><dd id="pow-numero">—</dd></div>
-        <div><dt>Ronda / máximo</dt><dd id="pow-ronda">—</dd></div>
-        <div><dt>Dificultad</dt><dd id="pow-dificultad">—</dd></div>
-        <div><dt>Intentos esperados</dt><dd id="pow-esperados">—</dd></div>
-        <div><dt>Intentos por ronda (k)</dt><dd id="pow-k">—</dd></div>
-        <div><dt>Intentos en total</dt><dd id="pow-intentos">—</dd></div>
-        <div><dt>Transacciones en el bloque</dt><dd id="pow-txs">—</dd></div>
-        <div><dt>Bloques restantes</dt><dd id="pow-restantes">—</dd></div>
-      </dl>
-      <div class="barra" role="presentation"><div class="barra-relleno" id="pow-barra-rondas"></div></div>
-      <h3 class="subtitulo-panel">Último bloque encontrado</h3>
-      <div id="pow-ganador"></div>
-      <h3 class="subtitulo-panel">Empates</h3>
-      <div id="pow-empates"></div>
-    </section>
+    <!-- ================= C. Los cinco pasos (pasos.js) ================= -->
+    <div class="pasos" role="tablist" aria-label="Pasos de la simulación" id="pasos">
+      <button type="button" class="paso" role="tab" id="tab-1" data-paso="1" aria-controls="panel-1" aria-selected="false" tabindex="-1"><span class="num" id="num-1">1</span><span class="lab"><span class="t">Configurar</span><span class="s" id="s-1"></span></span></button>
+      <button type="button" class="paso" role="tab" id="tab-2" data-paso="2" aria-controls="panel-2" aria-selected="false" tabindex="-1"><span class="num" id="num-2">2</span><span class="lab"><span class="t">Transacciones</span><span class="s" id="s-2"></span></span></button>
+      <button type="button" class="paso" role="tab" id="tab-3" data-paso="3" aria-controls="panel-3" aria-selected="false" tabindex="-1"><span class="num" id="num-3">3</span><span class="lab"><span class="t" id="t-3">Minar</span><span class="s" id="s-3"></span></span></button>
+      <button type="button" class="paso" role="tab" id="tab-4" data-paso="4" aria-controls="panel-4" aria-selected="false" tabindex="-1"><span class="num" id="num-4">4</span><span class="lab"><span class="t">Cadena y nodos</span><span class="s" id="s-4"></span></span></button>
+      <button type="button" class="paso" role="tab" id="tab-5" data-paso="5" aria-controls="panel-5" aria-selected="false" tabindex="-1"><span class="num" id="num-5">5</span><span class="lab"><span class="t">Pruebas y ataques</span><span class="s" id="s-5"></span></span></button>
+    </div>
 
-    <!-- 6a. PoS: controles de la ronda -->
-    <section class="tarjeta consenso solo-pos" id="panel-pos" aria-labelledby="titulo-pos">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-pos">Ronda (PoS)</h2>
-        <span id="pos-estado" class="insignia neutro">—</span>
-      </div>
-      <div class="fila-en-linea">
-        <label class="campo en-linea">
-          <span class="etiqueta">Rondas</span>
-          <input id="pos-rondas" type="text" inputmode="numeric" value="1" size="3">
-        </label>
-        <label class="casilla"><input id="pos-auto-tx" type="checkbox"> Generar transacciones si faltan</label>
-      </div>
-      <div class="botonera">
-        <button type="button" id="btn-pos-iniciar" class="boton primario">Iniciar ronda</button>
-        <button type="button" id="btn-pos-avanzar" class="boton">Avanzar</button>
-        <button type="button" id="btn-pos-automatico" class="boton" aria-pressed="false">Automático</button>
-        <button type="button" id="btn-pos-apostar-todo" class="boton">Apostar todo</button>
-        <button type="button" id="btn-pos-cancelar" class="boton peligro">Cancelar</button>
-      </div>
-      <p id="pos-explicacion" class="explicacion">—</p>
-      <dl class="datos-rejilla">
-        <div><dt>Bloque objetivo</dt><dd id="pos-numero">—</dd></div>
-        <div><dt>Intento</dt><dd id="pos-intento">—</dd></div>
-        <div><dt>Rondas restantes</dt><dd id="pos-restantes">—</dd></div>
-        <div><dt>Proponente sorteado</dt><dd id="pos-proponente">—</dd></div>
-        <div><dt>Candidato</dt><dd id="pos-candidato">—</dd></div>
-        <div><dt>Hash del candidato</dt><dd id="pos-hash-candidato">—</dd></div>
-        <div><dt>Hash anterior</dt><dd id="pos-hash-anterior">—</dd></div>
-      </dl>
-      <div id="pos-resultado"></div>
-    </section>
+    <div class="cuerpo">
+      <div class="paneles">
 
-    <!-- 6b. PoS: máquina de estados, validadores y votación -->
-    <section class="tarjeta ancho-completo solo-pos" id="panel-pos-detalle" aria-labelledby="titulo-pos-detalle">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-pos-detalle">Máquina de estados y votación</h2>
-      </div>
-      <div class="diagrama-pos" id="diagrama-pos" role="list" aria-label="Estados de la ronda PoS">
-        <div class="estado-pos" role="listitem" data-estado="APUESTAS">
-          <span class="estado-nombre">APUESTAS</span><span class="estado-desc">Cada validador bloquea su apuesta</span>
-        </div>
-        <span class="flecha" aria-hidden="true">→</span>
-        <div class="estado-pos" role="listitem" data-estado="SORTEO">
-          <span class="estado-nombre">SORTEO</span><span class="estado-desc">Proponente al azar, ponderado por apuesta</span>
-        </div>
-        <span class="flecha" aria-hidden="true">→</span>
-        <div class="estado-pos" role="listitem" data-estado="CANDIDATO">
-          <span class="estado-nombre">CANDIDATO</span><span class="estado-desc">El proponente arma el bloque</span>
-        </div>
-        <span class="flecha" aria-hidden="true">→</span>
-        <div class="estado-pos" role="listitem" data-estado="VOTACION">
-          <span class="estado-nombre">VOTACION</span><span class="estado-desc">Cada validador valida y firma su voto</span>
-        </div>
-        <span class="flecha" aria-hidden="true">→</span>
-        <div class="ramas" role="presentation">
-          <div class="estado-pos final-ok" role="listitem" data-estado="ACEPTADO">
-            <span class="estado-nombre">ACEPTADO</span><span class="estado-desc">3V ≥ 2A: el bloque entra a la cadena</span>
-          </div>
-          <div class="estado-pos final-mal" role="listitem" data-estado="RECHAZADO">
-            <span class="estado-nombre">RECHAZADO</span><span class="estado-desc">Castigo al proponente y nuevo sorteo</span>
-          </div>
-        </div>
-      </div>
-      <div class="diagrama-extra">
-        <span class="nota-flecha">RECHAZADO ↺ SORTEO (nuevo intento sin el castigado)</span>
-        <span class="estado-pos chico final-mal" data-estado="SIN_VALIDADORES"><span class="estado-nombre">SIN_VALIDADORES</span></span>
-        <span class="estado-pos chico" data-estado="CANCELADA"><span class="estado-nombre">CANCELADA</span></span>
-      </div>
-
-      <div class="dos-columnas">
-        <div>
-          <h3 class="subtitulo-panel">Validadores y apuestas</h3>
-          <p class="ayuda">La apuesta sólo se edita en APUESTAS. Probabilidad de ser proponente = apuesta ÷ total apostado (A).</p>
-          <div class="tabla-desplazable">
-            <table class="tabla">
-              <thead>
-                <tr><th>Validador</th><th class="num">Disponible</th><th class="num">Apuesta</th><th>Probabilidad</th><th class="centro">Voto</th><th>Papel</th></tr>
-              </thead>
-              <tbody id="cuerpo-validadores"></tbody>
-            </table>
-          </div>
-          <p id="validadores-vacio" class="vacio">No hay ronda activa. Pulse «Iniciar ronda».</p>
-          <div class="botonera">
-            <button type="button" id="btn-guardar-apuestas" class="boton primario">Guardar apuestas</button>
-            <button type="button" id="btn-descartar-apuestas" class="boton fantasma">Descartar cambios</button>
-          </div>
-        </div>
-        <div>
-          <h3 class="subtitulo-panel">Votación (umbral de 2/3)</h3>
-          <div class="umbral" aria-hidden="true">
-            <div class="umbral-pista">
-              <div class="umbral-favor" id="umbral-favor"></div>
-              <div class="umbral-contra" id="umbral-contra"></div>
+        <!-- ================= Paso 1 · Configurar la red (paso1_config.js) ================= -->
+        <section class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1" hidden>
+          <div class="panel-cab"><h2><span class="pnum">1</span>Configurar la red</h2></div>
+          <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> Una red es un grupo de computadoras (nodos <button type="button" class="ayuda-btn" data-g="nodo" aria-label="¿Qué es un nodo?">?</button>) que llevan cada una su propia copia del registro de pagos. Aquí eliges cuántos nodos hay, con cuánto dinero empieza cada uno y cómo se ponen de acuerdo.</span></p>
+          <div class="g2">
+            <div class="card">
+              <h3><svg class="ic" aria-hidden="true"><use href="#i-server"></use></svg>Red actual</h3>
+              <div class="tabla-wrap"><table class="resumen"><tbody id="resumen-red"></tbody></table></div>
             </div>
-            <div class="umbral-marca"><span>2/3</span></div>
+            <form class="card" id="form-red" novalidate>
+              <h3><svg class="ic" aria-hidden="true"><use href="#i-sliders"></use></svg>Crear una red nueva</h3>
+              <fieldset class="fs">
+                <legend class="lbl">Tipo de consenso</legend>
+                <div class="opciones">
+                  <label class="opcion"><input type="radio" name="modo" value="pow"><span><b><svg class="ic" aria-hidden="true" style="color:var(--pow)"><use href="#i-pick"></use></svg>Prueba de trabajo (PoW)</b><span class="ayuda">Los nodos compiten resolviendo un acertijo de cálculo; el primero que lo resuelve agrega el bloque.</span></span></label>
+                  <label class="opcion"><input type="radio" name="modo" value="pos"><span><b><svg class="ic" aria-hidden="true" style="color:var(--pos)"><use href="#i-scale"></use></svg>Prueba de participación (PoS)</b><span class="ayuda">Los nodos apuestan monedas; un sorteo elige quién propone el bloque y los demás votan.</span></span></label>
+                </div>
+              </fieldset>
+              <div class="filas">
+                <div class="campo"><label for="f-num_nodos">Número de nodos</label><input id="f-num_nodos" name="num_nodos" inputmode="numeric" autocomplete="off" aria-describedby="a-num_nodos e-num_nodos"><span class="ayuda" id="a-num_nodos">Entre 10 y 20.</span><span class="err" id="e-num_nodos"></span></div>
+                <div class="campo"><label for="f-saldo_inicial">Dinero inicial por nodo</label><input id="f-saldo_inicial" name="saldo_inicial" inputmode="numeric" autocomplete="off" aria-describedby="a-saldo_inicial e-saldo_inicial"><span class="ayuda" id="a-saldo_inicial">Monedas enteras con que empieza cada nodo.</span><span class="err" id="e-saldo_inicial"></span></div>
+                <div class="campo"><label for="f-recompensa">Recompensa por bloque</label><input id="f-recompensa" name="recompensa" inputmode="numeric" autocomplete="off" aria-describedby="a-recompensa e-recompensa"><span class="ayuda" id="a-recompensa"></span><span class="err" id="e-recompensa"></span></div>
+                <div class="campo solo-pow"><label for="f-dificultad">Dificultad <button type="button" class="ayuda-btn" data-g="dificultad" aria-label="¿Qué es la dificultad?">?</button></label><input id="f-dificultad" name="dificultad" inputmode="numeric" autocomplete="off" aria-describedby="a-dificultad e-dificultad"><span class="previa" id="a-dificultad"></span><span class="err" id="e-dificultad"></span></div>
+              </div>
+              <details class="avanzadas" id="avanzadas">
+                <summary>Opciones avanzadas<span class="avz-nota" id="avanzadas-nota"></span></summary>
+                <div class="filas">
+                  <div class="campo"><label for="f-semilla">Semilla</label><input id="f-semilla" name="semilla" autocomplete="off" aria-describedby="a-semilla e-semilla"><span class="ayuda" id="a-semilla">Misma semilla y mismos pasos ⇒ mismos hashes. Sirve para repetir una demostración.</span><span class="err" id="e-semilla"></span></div>
+                  <div class="campo"><label for="f-max_tx_por_bloque">Transacciones por bloque</label><input id="f-max_tx_por_bloque" name="max_tx_por_bloque" inputmode="numeric" autocomplete="off" aria-describedby="a-max_tx_por_bloque e-max_tx_por_bloque"><span class="ayuda" id="a-max_tx_por_bloque">Cuántas transacciones en espera caben en un bloque (1 a 50).</span><span class="err" id="e-max_tx_por_bloque"></span></div>
+                  <div class="campo solo-pow"><label for="f-intentos_por_ronda">Intentos por ronda (k)</label><input id="f-intentos_por_ronda" name="intentos_por_ronda" inputmode="numeric" autocomplete="off" aria-describedby="a-intentos_por_ronda e-intentos_por_ronda"><span class="ayuda" id="a-intentos_por_ronda">Cuántos nonces prueba cada minero en cada ronda (1 a 5000).</span><span class="err" id="e-intentos_por_ronda"></span></div>
+                  <div class="campo solo-pow"><label for="f-max_rondas">Máximo de rondas</label><input id="f-max_rondas" name="max_rondas" inputmode="numeric" autocomplete="off" aria-describedby="a-max_rondas e-max_rondas"><span class="ayuda" id="a-max_rondas">Límite para no minar para siempre.</span><span class="err" id="e-max_rondas"></span></div>
+                  <div class="campo"><label for="f-intervalo_ms">Ritmo de la animación (ms)</label><input id="f-intervalo_ms" name="intervalo_ms" inputmode="numeric" autocomplete="off" aria-describedby="a-intervalo_ms e-intervalo_ms"><span class="ayuda" id="a-intervalo_ms">Pausa entre rondas automáticas (50 a 2000). Más alto = más lento (mejor para el video).</span><span class="err" id="e-intervalo_ms"></span></div>
+                  <div class="campo"><label for="f-reloj">Reloj</label><select id="f-reloj" name="reloj" aria-describedby="a-reloj"><option value="simulado">Simulado (reproducible)</option><option value="real">Real</option></select><span class="ayuda" id="a-reloj">Simulado: horas reproducibles desde el 1 ene 2026.</span></div>
+                  <div class="campo solo-pos"><label for="f-seleccion_validadores">Quiénes validan</label><select id="f-seleccion_validadores" name="seleccion_validadores" aria-describedby="a-seleccion_validadores"><option value="todos">Todos los nodos con saldo</option><option value="aleatorio">Una muestra al azar</option></select><span class="ayuda" id="a-seleccion_validadores">Todos los nodos con saldo, o una muestra al azar de N.</span></div>
+                  <div class="campo solo-pos"><label for="f-num_validadores">Cuántos (si es al azar)</label><input id="f-num_validadores" name="num_validadores" inputmode="numeric" autocomplete="off" aria-describedby="e-num_validadores"><span class="err" id="e-num_validadores"></span></div>
+                  <div class="campo solo-pos"><label for="f-regla_castigo">Regla de castigo <button type="button" class="ayuda-btn" data-g="castigo" aria-label="¿Qué es el castigo?">?</button></label><select id="f-regla_castigo" name="regla_castigo" aria-describedby="a-regla_castigo"><option value="A">A: pierde toda su apuesta</option><option value="B">B: pierde α % del valor del bloque</option></select><span class="ayuda" id="a-regla_castigo">A: pierde toda su apuesta. B: pierde α % del valor de las transacciones del bloque, sin pasar de su apuesta.</span></div>
+                  <div class="campo solo-pos"><label for="f-alfa_porcentaje">α (porcentaje, regla B)</label><input id="f-alfa_porcentaje" name="alfa_porcentaje" inputmode="numeric" autocomplete="off" aria-describedby="a-alfa_porcentaje e-alfa_porcentaje"><span class="ayuda" id="a-alfa_porcentaje">Se usa sólo con la regla B (1 a 100).</span><span class="err" id="e-alfa_porcentaje"></span></div>
+                </div>
+              </details>
+              <div class="form-pie acciones"><button type="submit" class="btn pri" id="b-crear-red"><svg class="ic" aria-hidden="true"><use href="#i-refresh"></use></svg>Crear red nueva</button></div>
+              <div id="conf-red"></div>
+              <div id="res-red" role="status"></div>
+            </form>
           </div>
-          <p id="umbral-texto" class="umbral-texto">—</p>
-          <p id="umbral-regla" class="umbral-regla mono">—</p>
-          <div class="tabla-desplazable tabla-baja">
-            <table class="tabla">
-              <thead><tr><th>Validador</th><th class="num">Peso</th><th class="centro">Voto</th><th>Firma</th></tr></thead>
-              <tbody id="cuerpo-votos"></tbody>
-            </table>
+        </section>
+
+        <!-- ================= Paso 2 · Crear transacciones (paso2_transacciones.js) ================= -->
+        <section class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+          <div class="panel-cab"><h2><span class="pnum">2</span>Crear transacciones</h2></div>
+          <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> Una transacción es un envío de monedas de un nodo a otro. Se firma <button type="button" class="ayuda-btn" data-g="firma" aria-label="¿Qué es una firma digital?">?</button> con la clave secreta de quien envía, así nadie puede falsificarla ni cambiarla. Queda en espera hasta que entre en un bloque.</span></p>
+          <div class="g2">
+            <form class="card" id="form-tx" novalidate>
+              <h3><svg class="ic" aria-hidden="true"><use href="#i-send"></use></svg>Enviar monedas</h3>
+              <div class="tx-fila">
+                <div class="campo"><label for="tx-emisor">De</label><select id="tx-emisor" aria-describedby="e-emisor"></select><span class="err" id="e-emisor"></span></div>
+                <div class="campo"><label for="tx-receptor">Para</label><select id="tx-receptor" aria-describedby="e-receptor"></select><span class="err" id="e-receptor"></span></div>
+                <div class="campo"><label for="tx-monto">Monto</label><input id="tx-monto" inputmode="numeric" autocomplete="off" aria-describedby="tx-pista e-monto"><span class="err" id="e-monto"></span></div>
+              </div>
+              <p class="pista" id="tx-pista"></p>
+              <div class="acciones" style="margin-top:10px"><button type="submit" class="btn pri" id="b-enviar-tx"><svg class="ic" aria-hidden="true"><use href="#i-send"></use></svg>Firmar y enviar</button></div>
+              <div id="res-tx" role="status"></div>
+              <div class="sep">o</div>
+              <div class="acciones">
+                <button type="button" class="btn" id="b-aleatorias"><svg class="ic" aria-hidden="true"><use href="#i-dice"></use></svg>Generar al azar</button>
+                <label class="sr-only" for="tx-cuantas">Cuántas transacciones al azar</label>
+                <select id="tx-cuantas" class="sel-chico"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option><option value="10">10</option></select>
+              </div>
+              <div id="res-aleatorias" role="status"></div>
+            </form>
+            <div class="card">
+              <h3><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg>En espera <span class="badge" id="pend-n">0</span> <button type="button" class="ayuda-btn" data-g="espera" aria-label="¿Qué es una transacción en espera?">?</button></h3>
+              <p class="nota" id="pend-nota"></p>
+              <div class="tabla-wrap" id="pend-tabla" hidden>
+                <table><thead><tr><th>#</th><th>De → Para</th><th class="num">Monto</th><th>Firma</th><th>Id</th></tr></thead><tbody id="pend-filas"></tbody></table>
+              </div>
+              <p class="vacio" id="pend-vacio">No hay transacciones en espera. Crea una o genera algunas al azar.</p>
+              <p class="nota" id="castigos-pend" style="margin-top:12px" hidden></p>
+            </div>
           </div>
-          <p id="votos-vacio" class="vacio">Todavía no hay votos.</p>
-          <form id="form-votar" class="fila-en-linea" novalidate>
-            <label class="campo en-linea">
-              <span class="etiqueta">Nodo</span>
-              <select name="nodo" data-nodos="todos"></select>
-            </label>
-            <label class="campo en-linea">
-              <span class="etiqueta">Voto</span>
-              <select name="voto">
-                <option value="si">A favor</option>
-                <option value="no">En contra</option>
-              </select>
-            </label>
-            <button type="submit" class="boton">Votar manualmente</button>
-          </form>
-          <p class="ayuda">Sólo se acepta en VOTACION. El voto de un nodo que no es validador, o un segundo voto, se rechaza.</p>
+        </section>
+
+        <!-- ================= Paso 3 · Minar (PoW, paso3_pow.js) o Votar (PoS, paso3_pos.js) ================= -->
+        <section class="panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+          <div id="p3-pow" hidden>
+            <div class="panel-cab"><h2><span class="pnum">3</span>Minar un bloque</h2><span class="tagmodo pow"><svg class="ic ic-s" aria-hidden="true"><use href="#i-pick"></use></svg>Prueba de trabajo</span></div>
+            <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> <span id="quees-pow"></span></span></p>
+            <div class="card">
+              <div class="acciones">
+                <button type="button" class="btn pri" id="b-minar1"><svg class="ic" aria-hidden="true"><use href="#i-pick"></use></svg>Minar 1 bloque</button>
+                <button type="button" class="btn" id="b-minar10"><svg class="ic" aria-hidden="true"><use href="#i-loop"></use></svg>Minar 10 seguidos</button>
+                <button type="button" class="btn peligro" id="b-detener"><svg class="ic" aria-hidden="true"><use href="#i-stop"></use></svg>Detener</button>
+              </div>
+              <p class="pista" id="pow-pista"></p>
+              <p class="meta" id="pow-meta"></p>
+              <div id="res-pow" role="status"></div>
+            </div>
+            <div id="pow-avisos" style="margin-top:14px"></div>
+            <div class="gpow">
+              <div class="card">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-pick"></use></svg>Carrera de mineros <button type="button" class="ayuda-btn" data-g="nonce" aria-label="¿Qué es un nonce?">?</button></h3>
+                <p class="nota" id="pow-nonces"></p>
+                <div class="tabla-wrap">
+                  <table><thead><tr><th>Minero</th><th class="num">Nonce</th><th class="num">Intentos</th><th>Último hash</th><th>Ceros</th><th>Estado</th></tr></thead><tbody id="carrera-filas"></tbody></table>
+                </div>
+              </div>
+              <div class="card">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-clock"></use></svg>Recompensas por madurar <button type="button" class="ayuda-btn" data-g="confirmaciones" aria-label="¿Qué son las confirmaciones?">?</button></h3>
+                <p class="nota" id="pow-recs-nota"></p>
+                <ul class="recs" id="pow-recs"></ul>
+                <p class="vacio" id="pow-recs-vacio">Todavía no hay recompensas. Mina un bloque para ver la primera.</p>
+                <div id="pow-madurar" style="margin-top:10px"></div>
+                <div id="res-madurar" role="status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="p3-pos" hidden>
+            <div class="panel-cab"><h2><span class="pnum">3</span>Votar un bloque</h2><span class="tagmodo pos"><svg class="ic ic-s" aria-hidden="true"><use href="#i-scale"></use></svg>Prueba de participación</span></div>
+            <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> Los validadores <button type="button" class="ayuda-btn" data-g="validador" aria-label="¿Qué es un validador?">?</button> apuestan monedas. Un sorteo —más apuesta, más boletos— elige quién propone el bloque, y todos votan. El bloque entra si los votos a favor suman al menos 2/3 de lo apostado; si el proponente hizo trampa, pierde su apuesta.</span></p>
+            <div class="card">
+              <p class="meta" id="pos-meta" style="margin-top:0"></p>
+              <ol class="linea" id="pos-linea" aria-label="Pasos de la ronda">
+                <li data-i="0"><span class="c">1</span><span class="lt">Apuestas</span></li>
+                <li data-i="1"><span class="c">2</span><span class="lt">Sorteo</span></li>
+                <li data-i="2"><span class="c">3</span><span class="lt">Bloque propuesto</span></li>
+                <li data-i="3"><span class="c">4</span><span class="lt">Votación</span></li>
+                <li data-i="4"><span class="c">5</span><span class="lt">Resultado</span></li>
+              </ol>
+              <p class="vuelta" id="pos-vuelta" hidden></p>
+              <div class="acciones">
+                <button type="button" class="btn pri" id="b-pos"><svg class="ic" aria-hidden="true"><use href="#i-play"></use></svg><span>Iniciar ronda</span></button>
+                <label class="switch"><input type="checkbox" role="switch" id="b-auto"><span>Avanzar solo</span></label>
+                <button type="button" class="btn peligro" id="b-cancelar-ronda"><svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg>Cancelar ronda</button>
+              </div>
+              <p class="pista" id="pos-pista"></p>
+              <p class="nota-castigo" id="pos-castigo"></p>
+              <div id="conf-ronda"></div>
+              <div id="res-pos" role="status"></div>
+            </div>
+            <div id="pos-aviso" style="margin-top:14px"></div>
+            <div class="gpos">
+              <div class="pila">
+                <div class="card"><h3><svg class="ic" aria-hidden="true"><use href="#i-dice"></use></svg>Sorteo <button type="button" class="ayuda-btn" data-g="sorteo" aria-label="¿Qué es el sorteo ponderado?">?</button></h3><div id="pos-sorteo"></div></div>
+                <div class="card"><h3><svg class="ic" aria-hidden="true"><use href="#i-vote"></use></svg>Votación <button type="button" class="ayuda-btn" data-g="umbral" aria-label="¿Qué es el umbral de 2/3?">?</button></h3><div id="pos-votos"></div></div>
+              </div>
+              <div class="card">
+                <h3><svg class="ic" aria-hidden="true"><use href="#i-shield"></use></svg>Validadores <button type="button" class="ayuda-btn" data-g="apuesta" aria-label="¿Qué es la apuesta?">?</button></h3>
+                <div class="tabla-wrap" id="val-tabla" hidden>
+                  <table><thead><tr><th>Nodo</th><th class="num">Apuesta</th><th>Probabilidad</th><th>Voto</th></tr></thead><tbody id="val-filas"></tbody></table>
+                </div>
+                <p class="vacio" id="val-vacio">Se forman al iniciar la ronda: todos los nodos conectados con saldo.</p>
+                <div class="acciones" id="val-guardar" style="margin-top:10px" hidden>
+                  <button type="button" class="btn chico" id="b-guardar-apuestas"><svg class="ic ic-s" aria-hidden="true"><use href="#i-check"></use></svg>Guardar apuestas</button>
+                  <span class="pista" style="margin:0">Máximo: el saldo disponible de cada uno.</span>
+                </div>
+                <div id="res-apuestas" role="status"></div>
+              </div>
+            </div>
+            <div class="card" style="margin-top:14px"><h3><svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg>Historial de esta ronda</h3><div id="pos-hist"></div></div>
+          </div>
+        </section>
+
+        <!-- ================= Paso 4 · Cadena y nodos (paso4_cadena.js) ================= -->
+        <section class="panel" role="tabpanel" id="panel-4" aria-labelledby="tab-4" hidden>
+          <div class="panel-cab"><h2><span class="pnum">4</span>Ver la cadena y la red</h2></div>
+          <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> Cada nodo guarda su propia copia de la cadena. Está sincronizado (✓) <button type="button" class="ayuda-btn" data-g="sincronizado" aria-label="¿Qué significa sincronizado?">?</button> cuando su último bloque es el mismo que el de los demás. Toca un nodo para ver su cadena bloque por bloque.</span></p>
+          <div class="card">
+            <h3><svg class="ic" aria-hidden="true"><use href="#i-server"></use></svg>Nodos <button type="button" class="ayuda-btn" data-g="disponible" aria-label="¿Qué es el saldo disponible?">?</button></h3>
+            <div class="tabla-wrap">
+              <table class="tabla-nodos"><thead><tr><th>Nodo</th><th>Estado</th><th class="num">Bloque</th><th>Sincronizado</th><th>Último hash</th><th class="num">Disponible</th><th class="num" id="th-extra">Por madurar</th><th>Acciones</th></tr></thead><tbody id="nodos-filas"></tbody></table>
+            </div>
+            <div id="res-nodos" role="status"></div>
+          </div>
+          <div class="card" id="card-cadena" style="margin-top:14px">
+            <div class="cab-cadena">
+              <h3><svg class="ic" aria-hidden="true"><use href="#i-link"></use></svg><label for="sel-cadena">Cadena de</label></h3>
+              <select id="sel-cadena"></select>
+              <span class="nota" style="margin:0" id="cadena-rango"></span>
+            </div>
+            <p class="nota">Cada bloque guarda el hash <button type="button" class="ayuda-btn" data-g="hash" aria-label="¿Qué es un hash?">?</button> del anterior: si uno cambia, la cadena se rompe desde ahí.</p>
+            <div class="bloques" id="tira-bloques" role="group" aria-label="Bloques de la cadena"></div>
+            <div class="ficha" id="ficha"></div>
+            <div id="res-cadena" role="status"></div>
+          </div>
+        </section>
+
+        <!-- ================= Paso 5 · Pruebas y ataques (paso5_pruebas.js + escenarios.js) ================= -->
+        <section class="panel" role="tabpanel" id="panel-5" aria-labelledby="tab-5" hidden>
+          <div class="panel-cab"><h2><span class="pnum">5</span>Pruebas y ataques</h2></div>
+          <p class="quees"><svg class="ic" aria-hidden="true"><use href="#i-info"></use></svg><span><b>¿Qué es esto?</b> Cada prueba intenta algo indebido o equivocado. La red debe detectarlo y no cambiar nada. Una marca verde significa que la red se comportó como debía (por ejemplo, rechazó el ataque).</span></p>
+          <div class="filtros-esc" role="group" aria-label="Filtrar pruebas" id="filtros-esc"></div>
+          <div class="card" id="card-tramposos">
+            <h3><svg class="ic" aria-hidden="true"><use href="#i-warn"></use></svg>Nodos tramposos <button type="button" class="ayuda-btn" data-g="tramposo" aria-label="¿Qué es un nodo tramposo?">?</button></h3>
+            <p class="nota">Un nodo tramposo sigue validando su copia, pero propone bloques con trampas (o vota al revés). Los demás deben rechazarlo.</p>
+            <div class="esc-acc" style="margin-top:0">
+              <div class="campo" style="flex:0 1 130px"><label for="tr-nodo">Nodo</label><select id="tr-nodo"></select></div>
+              <div class="campo"><label for="tr-trampa">Trampa</label><select id="tr-trampa"></select></div>
+              <button type="button" class="btn" id="b-tramposo"><svg class="ic ic-s" aria-hidden="true"><use href="#i-warn"></use></svg>Hacer tramposo</button>
+            </div>
+            <ul class="tramp-lista" id="tramp-lista"></ul>
+            <p class="vacio" id="tramp-vacio">Ahora no hay ningún nodo tramposo.</p>
+            <div id="res-tramposos" role="status"></div>
+          </div>
+          <div id="lista-esc"></div>
+          <p class="nota" id="esc-otro-modo" style="margin-top:14px"></p>
+          <details class="card" style="margin-top:14px" id="expertos">
+            <summary class="sum-expertos">Para expertos: enviar una petición a mano</summary>
+            <form id="form-cruda" novalidate style="margin-top:12px">
+              <div class="filas">
+                <div class="campo" style="max-width:140px"><label for="cr-metodo">Método</label><select id="cr-metodo"><option>POST</option><option>GET</option></select></div>
+                <div class="campo"><label for="cr-ruta">Ruta</label><input id="cr-ruta" value="/api/transacciones" autocomplete="off" spellcheck="false"></div>
+              </div>
+              <div class="campo" style="margin-top:10px"><label for="cr-cuerpo">Cuerpo (JSON)</label><textarea id="cr-cuerpo" spellcheck="false">{"emisor": "N01", "receptor": "N02", "monto": [5]}</textarea></div>
+              <div class="acciones" style="margin-top:10px"><button type="submit" class="btn" id="b-cruda"><svg class="ic ic-s" aria-hidden="true"><use href="#i-send"></use></svg>Enviar petición</button></div>
+              <div id="res-cruda" role="status"></div>
+            </form>
+          </details>
+        </section>
+      </div>
+
+      <!-- ================= D. Bitácora (bitacora.js) ================= -->
+      <aside class="bitacora" id="bitacora" aria-labelledby="bit-titulo" tabindex="-1">
+        <div class="bit-cab">
+          <h2 id="bit-titulo"><svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg>Bitácora <span class="cuantos" id="bit-n"></span></h2>
+          <p>Todo lo que pasa en la red, del más reciente al más antiguo.</p>
+          <div class="filtros" role="group" aria-label="Filtrar la bitácora" id="bit-filtros"></div>
         </div>
-      </div>
-
-      <div class="dos-columnas">
-        <div>
-          <h3 class="subtitulo-panel">Historial de intentos</h3>
-          <div class="tabla-desplazable tabla-baja">
-            <table class="tabla">
-              <thead><tr><th class="num">Intento</th><th>Proponente</th><th>Resultado</th><th>Votos (V / A)</th><th>Detalle</th></tr></thead>
-              <tbody id="cuerpo-historial-pos"></tbody>
-            </table>
-          </div>
-          <p id="historial-pos-vacio" class="vacio">Sin intentos en esta ronda.</p>
-        </div>
-        <div>
-          <h3 class="subtitulo-panel">Castigos de la ronda</h3>
-          <ul id="lista-castigos-ronda" class="lista-simple"></ul>
-          <p id="castigos-ronda-vacio" class="vacio">Nadie ha sido castigado en esta ronda.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. Nodos -->
-    <section class="tarjeta ancho-completo" id="panel-nodos" aria-labelledby="titulo-nodos">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-nodos">Nodos</h2>
-        <p class="ayuda" id="nodos-resumen"></p>
-      </div>
-      <div class="tabla-desplazable">
-        <table class="tabla tabla-nodos">
-          <thead>
-            <tr>
-              <th>Nodo</th>
-              <th>Estado</th>
-              <th class="num">Altura</th>
-              <th>Último hash</th>
-              <th class="centro">Sinc.</th>
-              <th class="num">Disponible</th>
-              <th>Recompensas pendientes</th>
-              <th class="num solo-pow">Nonce</th>
-              <th class="num solo-pow">Intentos</th>
-              <th class="solo-pow">Último hash calculado</th>
-              <th class="num solo-pos">Apuesta</th>
-              <th class="solo-pos">Probabilidad</th>
-              <th class="centro solo-pos">Voto</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="cuerpo-nodos"></tbody>
-        </table>
-      </div>
-      <p id="nodos-vacio" class="vacio">Esperando datos del servidor…</p>
-    </section>
-
-    <!-- 7. Explorador de la cadena -->
-    <section class="tarjeta ancho-2" id="panel-cadena" aria-labelledby="titulo-cadena">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-cadena">Explorador de la cadena</h2>
-      </div>
-      <div class="fila-en-linea">
-        <label class="campo en-linea">
-          <span class="etiqueta">Nodo</span>
-          <select id="cadena-nodo" data-nodos="todos"></select>
-        </label>
-        <button type="button" id="btn-cargar-cadena" class="boton">Actualizar</button>
-        <label class="casilla"><input type="checkbox" id="cadena-auto" checked> Actualizar sola</label>
-        <label class="casilla"><input type="checkbox" id="cadena-reciente" checked> Más reciente arriba</label>
-      </div>
-      <p id="cadena-resumen" class="ayuda">Elija un nodo para ver su copia de la cadena.</p>
-      <div id="lista-bloques" class="lista-bloques"></div>
-    </section>
-
-    <!-- 9. Bitácora -->
-    <section class="tarjeta" id="panel-bitacora" aria-labelledby="titulo-bitacora">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-bitacora">Bitácora</h2>
-        <span id="bitacora-cuenta" class="insignia neutro">0</span>
-      </div>
-      <div class="fila-en-linea">
-        <label class="campo en-linea">
-          <span class="etiqueta">Tipo</span>
-          <select id="bitacora-filtro"><option value="">Todos los tipos</option></select>
-        </label>
-        <label class="campo en-linea crece">
-          <span class="etiqueta">Buscar</span>
-          <input id="bitacora-busqueda" type="search" placeholder="Texto del mensaje…">
-        </label>
-      </div>
-      <ul id="lista-eventos" class="lista-eventos"></ul>
-      <p id="bitacora-vacia" class="vacio">Aún no hay eventos.</p>
-    </section>
-
-    <!-- 8. Laboratorio de pruebas -->
-    <section class="tarjeta ancho-completo" id="panel-laboratorio" aria-labelledby="titulo-laboratorio">
-      <div class="tarjeta-cabecera">
-        <h2 id="titulo-laboratorio">Laboratorio de pruebas</h2>
-        <p class="ayuda">Provoque errores y ataques para comprobar que la red los rechaza sin romperse.</p>
-      </div>
-      <label class="casilla interruptor">
-        <input type="checkbox" id="validacion-navegador" checked>
-        Validar los formularios en el navegador (desactívelo para enviar datos erróneos y ver cómo responde el servidor)
-      </label>
-
-      <div class="lab-rejilla">
-        <form class="lab-caja" id="form-alterar" novalidate autocomplete="off">
-          <h3>Alterar un bloque y difundirlo</h3>
-          <p class="ayuda">Se altera una copia de la cadena del nodo; los demás la validan y deben rechazarla.</p>
-          <div class="campos campos-3">
-            <label class="campo">
-              <span class="etiqueta">Nodo</span>
-              <select name="nodo" data-nodos="todos" data-defecto="0"></select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Número de bloque</span>
-              <input name="numero" type="text" inputmode="numeric" value="1">
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Alteración</span>
-              <select name="tipo">
-                <option value="monto">Monto de la 1.ª transacción (sin recalcular el hash)</option>
-                <option value="monto_rehash">Monto y hash recalculado</option>
-                <option value="hash">Reemplazar el hash</option>
-                <option value="hash_anterior">Reemplazar hash_anterior</option>
-                <option value="recompensa">Recompensa ×10</option>
-              </select>
-            </label>
-          </div>
-          <p class="ayuda" id="ayuda-alterar"></p>
-          <button type="submit" class="boton peligro">Alterar y difundir</button>
-          <div class="resultado" id="resultado-alterar" hidden></div>
-        </form>
-
-        <form class="lab-caja" id="form-cadena-corta" novalidate autocomplete="off">
-          <h3>Difundir una cadena más corta</h3>
-          <p class="ayuda">El nodo envía su cadena sin los últimos bloques; nadie debe adoptarla.</p>
-          <div class="campos campos-2">
-            <label class="campo">
-              <span class="etiqueta">Nodo</span>
-              <select name="nodo" data-nodos="todos" data-defecto="0"></select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Bloques a quitar</span>
-              <input name="quitar" type="text" inputmode="numeric" value="1">
-            </label>
-          </div>
-          <button type="submit" class="boton peligro">Difundir cadena corta</button>
-          <div class="resultado" id="resultado-cadena-corta" hidden></div>
-        </form>
-
-        <form class="lab-caja" id="form-ataque-tx" novalidate autocomplete="off">
-          <h3>Transacción tramposa</h3>
-          <div class="campos campos-3">
-            <label class="campo">
-              <span class="etiqueta">Ataque</span>
-              <select name="tipo">
-                <option value="firma_alterada">Firma alterada</option>
-                <option value="otra_clave">Firmada con otra clave</option>
-                <option value="doble_gasto">Doble gasto (dos envíos)</option>
-                <option value="repetida">Transacción repetida</option>
-              </select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Emisor</span>
-              <select name="emisor" data-nodos="todos" data-defecto="0"></select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Receptor</span>
-              <select name="receptor" data-nodos="todos" data-defecto="1"></select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Monto</span>
-              <input name="monto" type="text" inputmode="numeric" value="10">
-            </label>
-            <label class="campo" id="campo-firmante" hidden>
-              <span class="etiqueta">Firma con la clave de</span>
-              <select name="firmante" data-nodos="opcional" data-texto-vacio="(el receptor)"></select>
-            </label>
-          </div>
-          <p class="ayuda" id="ayuda-ataque-tx"></p>
-          <button type="submit" class="boton peligro">Enviar transacción</button>
-          <div class="resultado" id="resultado-ataque-tx" hidden></div>
-        </form>
-
-        <div class="lab-caja solo-pos" id="caja-votos-invalidos">
-          <h3>Votos inválidos (PoS)</h3>
-          <p class="ayuda">Requieren una ronda en VOTACION. El servidor debe rechazar ambos sin alterar el conteo.</p>
-          <div class="botonera">
-            <button type="button" id="btn-voto-no-validador" class="boton peligro">Voto de un nodo que no es validador</button>
-            <button type="button" id="btn-voto-doble" class="boton peligro">Votar dos veces</button>
-          </div>
-          <div class="resultado" id="resultado-votos" hidden></div>
-        </div>
-
-        <form class="lab-caja lab-ancha" id="form-cruda" novalidate autocomplete="off">
-          <h3>Enviar una petición cruda</h3>
-          <p class="ayuda">El cuerpo se envía tal cual (texto libre, aunque no sea JSON válido) para comprobar que el servidor responde con un error claro y nunca con un traceback.</p>
-          <div class="campos campos-crudo">
-            <label class="campo">
-              <span class="etiqueta">Ejemplo</span>
-              <select name="ejemplo" id="crudo-ejemplo"><option value="">Elegir un ejemplo…</option></select>
-            </label>
-            <label class="campo">
-              <span class="etiqueta">Método</span>
-              <select name="metodo">
-                <option>GET</option>
-                <option selected>POST</option>
-                <option>PUT</option>
-                <option>PATCH</option>
-                <option>DELETE</option>
-              </select>
-            </label>
-            <label class="campo crece">
-              <span class="etiqueta">Ruta</span>
-              <input name="ruta" type="text" value="/api/transacciones" spellcheck="false" class="mono">
-            </label>
-          </div>
-          <label class="campo">
-            <span class="etiqueta">Cuerpo</span>
-            <textarea name="cuerpo" rows="4" spellcheck="false" class="mono">{"emisor": "N01", "receptor": "N02", "monto": "abc"}</textarea>
-          </label>
-          <button type="submit" class="boton">Enviar petición</button>
-          <div class="resultado" id="resultado-crudo" hidden></div>
-        </form>
-      </div>
-    </section>
+        <ul class="eventos" id="eventos"></ul>
+        <p class="vacio bit-vacio" id="eventos-vacio" hidden>No hay eventos de este tipo todavía.</p>
+      </aside>
+    </div>
   </main>
+</div>
 
-  <footer class="pie">
-    Simulador académico de consenso. El estado vive en el servidor: esta página sólo lo muestra y envía acciones.
-  </footer>
+<!-- Burbuja del botón «?» y cajón del glosario (glosario.js) -->
+<div id="pop" class="pop" role="dialog" aria-labelledby="pop-t" tabindex="-1" hidden></div>
+<div id="fondo" class="fondo" hidden></div>
+<aside id="glosario" class="cajon" role="dialog" aria-modal="true" aria-labelledby="glos-t" hidden>
+  <div class="cajon-cab"><svg class="ic" aria-hidden="true"><use href="#i-book"></use></svg><h2 id="glos-t">Glosario</h2><button type="button" class="btn chico" id="glos-cerrar">Cerrar</button></div>
+  <div class="cajon-cuerpo" tabindex="0"><p class="nota">Palabras de la pantalla, en lenguaje llano.</p><dl id="glos-lista"></dl></div>
+</aside>
+<noscript><p class="noscript">Esta página necesita JavaScript para mostrar la simulación.</p></noscript>
 </body>
 </html>
