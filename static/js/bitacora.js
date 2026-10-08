@@ -1,5 +1,5 @@
 /* ==========================================================================
-   bitacora.js — Zona D: todo lo que pasa en la red (docs/UX.md §8).
+   bitacora.js — Zona D: todo lo que pasa en la red.
 
    Cada evento del servidor ({n, tiempo, tipo, mensaje, datos}) se muestra con
    un icono, una etiqueta en texto (no sólo color), «#n · hh:mm:ss» y la frase

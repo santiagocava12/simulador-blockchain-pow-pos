@@ -1,7 +1,7 @@
 /* ==========================================================================
    pasos.js — Zona C: las cinco pestañas numeradas (role="tablist").
 
-   Debajo de cada nombre va un resumen vivo (docs/UX.md §3.3) y una marca ✓
+   Debajo de cada nombre va un resumen vivo y una marca ✓
    cuando ese paso ya se hizo. Todas se pueden abrir en cualquier orden.
    Teclado: ← → cambian de pestaña; Inicio / Fin van a la primera / última.
    El paso abierto se recuerda en la sesión (al recargar se ve el mismo).

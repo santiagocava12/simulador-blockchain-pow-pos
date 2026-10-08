@@ -1,5 +1,5 @@
 /* ==========================================================================
-   api.js — Habla con el servidor Flask (rutas de docs/DISENO.md §18).
+   api.js — Habla con el servidor Flask.
 
    Toda llamada devuelve SIEMPRE un objeto "registro" (nunca lanza):
      { metodo, ruta, cuerpo, http, ok, mensaje, datos, error, codigo,

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   escenarios.js — Las pruebas y ataques del paso 5 (docs/UX.md §7).
+   escenarios.js — Las pruebas y ataques del paso 5.
 
    Cada escenario es un objeto con su texto («Qué hace», «Debería pasar») y
    una función run(p, parametros) que hace las llamadas REALES a la API en

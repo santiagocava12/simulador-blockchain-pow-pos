@@ -4,7 +4,7 @@
    Arma la página (cada módulo conecta sus botones), se suscribe a las
    instantáneas del servidor y arranca el sondeo de /api/estado.
 
-   Mapa de módulos (docs/UX.md §2):
+   Mapa de módulos:
      A  Encabezado ........ paso1_config.js (conmutador PoW/PoS), glosario.js, tema (aquí)
      B  Ahora ............. ahora.js (+ pos_comun.js)
      C  Pasos ............. pasos.js y un módulo por paso:

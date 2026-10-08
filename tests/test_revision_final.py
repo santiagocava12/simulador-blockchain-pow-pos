@@ -1,4 +1,4 @@
-"""Regresiones de la revisión final del orquestador."""
+"""Pruebas de regresión del mensaje de inicio de la minería."""
 
 from conftest import sim_pow
 

@@ -1,6 +1,6 @@
-"""Pruebas de regresión de la revisión de la fase 2.
+"""Pruebas de regresión de casos límite de la red, la API y PoS.
 
-Cada sección corresponde a un hallazgo de los revisores:
+Cada sección cubre un caso:
 
 1. La bitácora registra "cadena_rechazada" en los ataques de cadena y
    "bloque_rechazado" cuando la votación PoS rechaza un bloque.
@@ -512,7 +512,7 @@ def test_reorganizacion_pos_devuelve_castigos_a_pendientes():
     assert_invariantes(sim)
 
 
-# ---------------------------------------------------------------- revisión del orquestador
+# ---------------------------------------------------------------- recepción de cadenas e integridad
 # El atajo de Nodo.recibir_cadena compara hashes RECALCULADOS (no identidad de
 # objetos) y las invariantes detectan un bloque modificado en memoria.
 

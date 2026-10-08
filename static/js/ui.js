@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ui.js — Piezas de interfaz que se repiten (docs/UX.md §9):
+   ui.js — Piezas de interfaz que se repiten:
      · línea de resultado bajo cada acción (ok / error / aviso / info),
      · respuesta del servidor con su remedio («Crear 3 al azar»…),
      · confirmación en línea para lo que borra (nunca confirm()),
@@ -123,7 +123,7 @@ export function detalleTecnico(llamadas) {
 }
 
 /**
- * Muestra lo que respondió el servidor a una acción (§9):
+ * Muestra lo que respondió el servidor a una acción:
  * verde con su mensaje, o rojo con el error tal cual y el remedio si existe.
  * opciones: tituloOk / textoOk (éxito) y tituloError (rechazo).
  */

@@ -1,4 +1,4 @@
-"""Pruebas de regresión de la revisión de la interfaz (probador E2E y revisor).
+"""Pruebas de regresión de datos y mensajes que usa la interfaz.
 
 1. Los mensajes de la ronda PoS (bitácora, mensaje de la ronda y 409
    estado_cambio) cuentan el intento desde 1, igual que la barra «Ahora», el

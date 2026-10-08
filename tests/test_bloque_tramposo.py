@@ -1,4 +1,4 @@
-"""Pruebas de la ruta opcional de UX.md §12.4: el bloque tramposo de un minero (PoW).
+"""Pruebas de la ruta del bloque tramposo de un minero (PoW).
 
 ``POST /api/ataques/bloque-tramposo {nodo, trampa}`` llama a
 ``Simulador.ataque_bloque_tramposo``. El nodo arma sobre la punta de SU cadena

@@ -1,8 +1,7 @@
 /* ==========================================================================
-   Simulador de blockchain — estilos de la interfaz (docs/UX.md §11).
-   La base es la de la maqueta aprobada (docs/ux/maqueta.html): mismas variables
-   de color (claro / oscuro / automático), tipografía y componentes.
-   Al final van los pocos estilos que agrega la app real.
+   Simulador de blockchain — estilos de la interfaz.
+   Variables de color (claro / oscuro / automático), tipografía y componentes;
+   al final, los estilos de detalle de la app.
    ========================================================================== */
 :root{
   --bg:#f4f6f9; --surface:#ffffff; --surface-2:#f1f3f6; --surface-3:#e8ebf0;
@@ -204,7 +203,7 @@ details.avanzadas .filas{padding-bottom:14px}
 .form-pie{margin-top:14px}
 .sep{display:flex;align-items:center;gap:10px;color:var(--text-3);font-size:13px;margin:14px 0}
 .sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--border)}
-/* «De» ocupa su renglón (como en la maqueta) para que se lea entero «N01 · 125 disponibles» */
+/* «De» ocupa su renglón para que se lea entero «N01 · 125 disponibles» */
 .tx-fila{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:10px}
 .tx-fila .campo:first-child{grid-column:1/-1}
 @container (max-width:520px){.tx-fila{grid-template-columns:1fr}}
@@ -412,7 +411,7 @@ tr.excluido td:first-child{text-decoration:line-through}
 .cajon dt:target,.cajon dt.marcado{color:var(--accent)}
 
 /* ==========================================================================
-   Agregados de la app real (no estaban en la maqueta)
+   Agregados de la app
    ========================================================================== */
 .sel-chico{min-height:40px;padding:6px 10px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);font-weight:600}
 @media (pointer:coarse){.sel-chico{min-height:44px}}

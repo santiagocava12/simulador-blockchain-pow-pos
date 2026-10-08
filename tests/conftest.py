@@ -1,7 +1,7 @@
 """Utilidades compartidas por las pruebas de aceptación.
 
-Las pruebas se escribieron ANTES del código, a partir del contrato
-`docs/DISENO.md` (§14–§18 y la tabla de casos de §20). Por eso aquí se
+Las pruebas se escribieron ANTES del código, a partir del contrato de
+diseño y de la sección 5 de la guía. Por eso aquí se
 reimplementan, de forma independiente y siguiendo la guía al pie de la letra,
 el hash de bloque, la serialización y firma de transacciones y el sorteo PoS:
 así las pruebas comprueban el formato del contrato y no sólo que el código
@@ -146,8 +146,8 @@ def avanzar_hasta(sim: Simulador, objetivo: str, max_pasos: int = 50) -> None:
 def dejar_pasar_tiempo(sim: Simulador, ms: int = 60_000) -> None:
     """Avanza el reloj simulado `ms` milisegundos (como si pasara el tiempo).
 
-    Los nodos rechazan bloques fechados después de su hora (§21.2:
-    timestamp_max = reloj.actual()). Las pruebas que fabrican bloques fuera del
+    Los nodos rechazan bloques fechados después de su hora
+    (timestamp_max = reloj.actual()). Las pruebas que fabrican bloques fuera del
     simulador con timestamps posteriores al último bloque lo usan antes de
     enviarlos.
     """
@@ -238,7 +238,7 @@ def texto_evento(evento: dict) -> str:
 def saldos_por_cadena(cadena: list[dict]) -> tuple[dict[str, int], dict[str, int]]:
     """Repite la cadena de forma independiente: (saldos disponibles, recompensas no maduras).
 
-    Las recompensas maduran cuando bloque + confirmaciones <= altura (§1, §9).
+    Las recompensas maduran cuando bloque + confirmaciones <= altura.
     """
     genesis = cadena[0]
     saldos = dict(genesis["saldos_iniciales"])

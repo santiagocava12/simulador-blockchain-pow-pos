@@ -1,6 +1,6 @@
 /* ==========================================================================
    paso1_config.js — Paso 1 «Configurar la red» y el conmutador PoW/PoS del
-   encabezado (docs/UX.md §4 paso 1 y §5).
+   encabezado.
 
    - «Red actual»: lo que dice config en la instantánea.
    - «Crear una red nueva»: 4 campos a la vista y el resto en «Opciones

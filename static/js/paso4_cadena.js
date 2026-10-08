@@ -1,5 +1,5 @@
 /* ==========================================================================
-   paso4_cadena.js — Paso 4 «Ver la cadena y la red» (docs/UX.md §4 y §6.6).
+   paso4_cadena.js — Paso 4 «Ver la cadena y la red».
 
    - Tabla de nodos (8 columnas): estado, bloque, si está sincronizado, último
      hash, saldo disponible, recompensas por madurar (PoW) o apuesta

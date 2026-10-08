@@ -1,6 +1,5 @@
 /* ==========================================================================
-   glosario.js — Botones «?» junto a los términos y cajón «Glosario»
-   (textos exactos de docs/UX.md §10).
+   glosario.js — Botones «?» junto a los términos y cajón «Glosario».
    Un botón con data-g="clave" abre una burbuja con la definición.
    ========================================================================== */
 

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   paso3_pos.js — Paso 3 en PoS «Votar un bloque» (docs/UX.md §4, §6.3–6.5).
+   paso3_pos.js — Paso 3 en PoS «Votar un bloque».
 
    La ronda es una máquina de estados que vive en el servidor:
      APUESTAS → SORTEO → CANDIDATO → VOTACION → ACEPTADO | RECHAZADO
@@ -130,7 +130,7 @@ function actualizarAviso(S) {
   });
 }
 
-/* ---------------------------------------------------------------- sorteo (rifa proporcional, §6.3) */
+/* ---------------------------------------------------------------- sorteo (rifa proporcional) */
 
 function actualizarSorteo(S) {
   const pos = objeto(S.pos);
@@ -192,7 +192,7 @@ function actualizarSorteo(S) {
   });
 }
 
-/* ---------------------------------------------------------------- votación (barra con 2/3, §6.4) */
+/* ---------------------------------------------------------------- votación (barra con 2/3) */
 
 function actualizarVotos(S) {
   const pos = objeto(S.pos);

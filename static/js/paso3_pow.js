@@ -1,5 +1,5 @@
 /* ==========================================================================
-   paso3_pow.js — Paso 3 en PoW «Minar un bloque» (docs/UX.md §4 y §6.1–6.2).
+   paso3_pow.js — Paso 3 en PoW «Minar un bloque».
 
    El navegador NO mina: pide POST /api/pow/minar y el motor del servidor da
    las rondas. Aquí se dibuja lo que trae cada sondeo:

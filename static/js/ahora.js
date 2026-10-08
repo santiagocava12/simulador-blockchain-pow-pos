@@ -2,7 +2,7 @@
    ahora.js — Zona B «Ahora»: qué pasa, qué sigue y cómo están los nodos.
 
    1) La frase de estado y el botón del siguiente paso salen de la
-      instantánea con las reglas de docs/UX.md §3, evaluadas EN ORDEN: gana la
+      instantánea con estas reglas, evaluadas EN ORDEN: gana la
       primera que se cumple.
    2) La tira de nodos (un chip por nodo, siempre visible).
    3) Los chips de resumen: bloque, en espera, sincronización y dinero.
@@ -22,7 +22,7 @@ const TONOS = {
   err: ['x', 'Problema'],
 };
 
-/* ---------------------------------------------------------------- reglas de §3 */
+/* ---------------------------------------------------------------- reglas de la barra «Ahora» */
 
 /**
  * Calcula { clave, tono, frase, cta, sec } con la instantánea S.
@@ -238,7 +238,7 @@ export function actualizarAhora(S) {
   actualizarChips(S);
 }
 
-/** Chip de un nodo en la tira: id, bloque e iconos de estado (§6.6). */
+/** Chip de un nodo en la tira: id, bloque e iconos de estado. */
 function actualizarTira(S) {
   const pos = objeto(S.pos);
   const minando = powActivo(S);

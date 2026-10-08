@@ -1,7 +1,7 @@
 /* ==========================================================================
    pos_comun.js — Lo que comparten la barra «Ahora» y el paso 3 en PoS:
-   la descripción del estado de la ronda (§3.1) y el botón que nombra la
-   siguiente transición (§3.2). Así el texto es idéntico en los dos lugares.
+   la descripción del estado de la ronda y el botón que nombra la
+   siguiente transición. Así el texto es idéntico en los dos lugares.
    ========================================================================== */
 
 import { post } from './api.js';
@@ -25,7 +25,7 @@ export function ultimoCastigo(pos) {
   return castigos.length ? objeto(castigos[castigos.length - 1]) : null;
 }
 
-/** Texto de la regla 4 de «Ahora» según el estado de la ronda (§3.1). */
+/** Texto de la regla 4 de «Ahora» según el estado de la ronda. */
 export function descripcionPos(S) {
   const pos = objeto(S.pos);
   const P = pos.proponente || '?';
@@ -47,7 +47,7 @@ export function descripcionPos(S) {
 }
 
 /**
- * El botón de la ronda (§3.2): mismo texto en «Ahora» y en el paso 3.
+ * El botón de la ronda: mismo texto en «Ahora» y en el paso 3.
  * Devuelve { texto, icono, pista, accion } con accion 'ronda' | 'avanzar' | 'paso1'.
  */
 export function botonRonda(S) {

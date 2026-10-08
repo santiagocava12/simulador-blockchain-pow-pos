@@ -1,6 +1,6 @@
 /* ==========================================================================
    trampas.js — Nombres en pantalla de las trampas de un nodo tramposo
-   (docs/UX.md §4, paso 5). Las claves son las que entiende el servidor.
+   (paso 5). Las claves son las que entiende el servidor.
    ========================================================================== */
 
 export const TEXTO_TRAMPA = {

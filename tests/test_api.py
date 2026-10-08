@@ -363,7 +363,7 @@ def test_c4_recibir_cadena_malformada_http(cliente, nombre):
 
 def test_c4_recibir_cadena_con_bloques_malos_http(cliente):
     genesis = cadena_de(cliente)[0]
-    # Pasa un minuto en el reloj de la red: el bloque fabricado aquí no queda en el futuro (§21.2).
+    # Pasa un minuto en el reloj de la red: el bloque fabricado aquí no queda en el futuro.
     dejar_pasar_tiempo(cliente.application.extensions["gestor"].actual())
     extendida = extender_cadena([genesis], [firmar_tx(SEMILLA, "N10", "N09", 1, timestamp_siguiente([genesis]))])
     malas = [

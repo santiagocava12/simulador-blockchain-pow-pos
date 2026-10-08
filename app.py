@@ -1,4 +1,4 @@
-"""Servidor web del simulador (Flask): la página y la API JSON (docs/DISENO.md §18).
+"""Servidor web del simulador (Flask): la página y la API JSON.
 
 Las rutas son delgadas: leen el cuerpo, sacan los campos y llaman al
 ``Simulador``, que valida cada valor y aplica la acción de forma atómica.
@@ -264,7 +264,7 @@ def _registrar_manejadores(app: Flask, gestor: Gestor) -> None:
 
 
 def _registrar_rutas(app: Flask, gestor: Gestor) -> None:
-    """Rutas de §18. Cada una toma el simulador actual y le pasa los campos tal como llegan."""
+    """Rutas de la API. Cada una toma el simulador actual y le pasa los campos tal como llegan."""
 
     # ---- página y lectura ----
 

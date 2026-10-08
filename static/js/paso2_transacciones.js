@@ -1,5 +1,5 @@
 /* ==========================================================================
-   paso2_transacciones.js — Paso 2 «Crear transacciones» (docs/UX.md §4).
+   paso2_transacciones.js — Paso 2 «Crear transacciones».
 
    - Enviar monedas: De / Para / Monto → POST /api/transacciones. El servidor
      firma con la clave del emisor, verifica la firma y el saldo, y la deja
@@ -39,7 +39,7 @@ function limpiarErrores() {
   }
 }
 
-/** Marca un campo con su error y le pone el foco (§9). */
+/** Marca un campo con su error y le pone el foco. */
 function marcarCampo(campo, mensaje) {
   const el = $(CAMPOS[campo]);
   texto($(`#e-${campo}`), mensaje);

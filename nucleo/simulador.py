@@ -296,7 +296,7 @@ class Simulador:
                             f"Inicie una simulación nueva en modo {'PoW' if modo == 'pow' else 'PoS'}", "modo_incorrecto")
 
     def _hora_maxima(self) -> int:
-        """La hora de los nodos (§21.2): un bloque recibido fechado después se rechaza ("en el futuro")."""
+        """La hora de los nodos: un bloque recibido fechado después se rechaza ("en el futuro")."""
         return self.reloj.actual()
 
     def _referencia(self):
@@ -448,7 +448,7 @@ class Simulador:
 
     @_lectura
     def estado(self, desde_evento=0) -> dict:
-        """Instantánea completa para la interfaz (§18). No avanza el reloj ni consume azar."""
+        """Instantánea completa para la interfaz. No avanza el reloj ni consume azar."""
         desde = 0 if desde_evento is None else leer_entero(desde_evento, "El parámetro desde", 0, MAX_ENTERO)
         ref = self._referencia()
         libro = ref.libro

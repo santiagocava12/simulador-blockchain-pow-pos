@@ -1,6 +1,6 @@
 """Pruebas de aceptación de la sección 5 de la guía, a nivel de Simulador.
 
-Cada caso de la tabla de docs/DISENO.md §20 tiene al menos una prueba cuyo
+Cada caso de la sección 5 de la guía tiene al menos una prueba cuyo
 nombre empieza con su código (test_e1_..., test_w1_..., test_s3_...). Se
 escribieron antes del código: sólo usan el comportamiento observable del
 contrato (excepciones y su código, estado(), cadena_nodo(), detalle_nodo(),
@@ -90,7 +90,7 @@ def _proponente_esperado(sim: Simulador, apuestas: dict[str, int], intento: int 
 
 
 def _hallazgos_de_referencia(bloque: dict, ids: list[str], k: int, dificultad: int, recompensa: int):
-    """Repite la minería por rondas del contrato (§14) a partir del bloque ganador.
+    """Repite la minería por rondas del contrato a partir del bloque ganador.
 
     Cada minero i prueba los nonces i, i+N, i+2N, ... (k por ronda) sobre su
     propio candidato (proponente y recompensa = él mismo) y se detiene en su
@@ -143,7 +143,7 @@ def _cadena_minada(bloques: int = 3) -> Simulador:
     """Simulador PoW con `bloques` bloques minados y todos los nodos sincronizados.
 
     Después pasa un minuto en el reloj simulado: así un bloque fabricado aquí
-    (extender_cadena) no queda fechado en el futuro para los nodos (§21.2).
+    (extender_cadena) no queda fechado en el futuro para los nodos.
     """
     sim = sim_pow()
     minar_bloques(sim, bloques)
